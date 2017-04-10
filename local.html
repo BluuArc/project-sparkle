@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Local Version</title>
+    <style>
+        /*from https://www.w3schools.com/css/css_align.asp*/
+        .center {
+            margin: auto;
+            width: 50%;
+            border: 3px solid #73AD21;
+            padding: 10px;
+        }
+        .right { 
+            margin: auto;
+        }
+    </style>
+</head>
+
+
+
+<script src="/socket.io/socket.io.js"></script>
+<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
+<script>
+    var socket = io();
+    $(function () {
+        socket.on('finish calculation', function (msg) { 
+            //put result in lower text area
+        });
+
+        socket.on('load units',function(msg){
+            //load unit names into dropdowns
+        });
+    });
+
+    function submitSquad(){
+        var data = "";
+        //get dropdown data and send it to application
+        socket.emit('send calculation', data);
+    }
+    
+</script>
+
+<body>
+    <div id="squad-maker" class="center">
+        <textarea id="unit-bank" style="display:none"></textarea>
+        <table style="text-align: center">
+            <!--headers-->
+            <tr>
+                <th>Front Position</th><th>Unit</th>
+                <th>Rear Position</th><th>Unit</th>
+            </tr>
+
+            <!--top row-->
+            <tr>
+                <td>Top Left:</td>
+                <td><select id="top-left">
+                    <option>top left spot</option>
+                </select></td>
+                <td>Top Right:</td>
+                <td><select id="top-right">
+                    <option>top right spot</option>
+                </select></td>
+            </tr>
+
+            <!--middle row-->
+            <tr>
+                <td>Middle Left:</td>
+                <td><select id="middle-left">
+                    <option>middle left spot</option>
+                </select></td>
+                <td>Middle Right:</td>
+                <td><select id="middle-right">
+                    <option>middle right spot</option>
+                </select></td>
+            </tr>
+
+            <!--bottom row-->
+            <tr>
+                <td>Bottom Left:</td>
+                <td><select id="bottom-left">
+                    <option>bottom left spot</option>
+                </select></td>
+                <td>Bottom Right:</td>
+                <td><select id="bottom-right">
+                    <option>bottom right spot</option>
+                </select></td>
+            </tr>
+        </table>
+        <button class="right">Submit</button>
+    </div><!-- end squad-maker -->
+
+    <div id="results-area" class="center">
+        <textarea id="results" style="width:100%"></textarea>
+    </div>
+</body>
+
+</html>

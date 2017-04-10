@@ -1,6 +1,12 @@
 //Source Reddit post: https://www.reddit.com/r/bravefrontier/comments/64f730/automatic_sparking_simulator_version_10/
 //Original Python Code (from Reddit Post above): https://drive.google.com/file/d/0B4cWakT3Wj70alVGTk1BQ2NYWkE/view
 
+var fs = require('fs');
+var underscore = require('underscore'); 
+var express = require('express');
+var app = express();
+var server = require('http').createServer(app);
+var io = require('socket.io')(server);
 
 function Unit(move_type,speed_type,effect_delay,frames){
     this.move_type = move_type;
@@ -208,4 +214,15 @@ function run(units){
     }
 }
 
-run(["Lasswell","Silvie","Lauda","Lid","Elza","Hisui"]);
+app.get('/',function(req,res){
+    res.sendFile(__dirname + "/local.html");
+})
+
+
+server.listen(8081, '127.0.0.1', function () {
+    var host = server.address().address;
+    var port = server.address().port;
+    console.log("Application listening at http://%s:%s", host,port);
+});
+
+run(["Lasswell", "Silvie", "Lauda", "Lid", "Elza", "Hisui"]);
