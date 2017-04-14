@@ -15,6 +15,7 @@ function Unit(move_type,speed_type,effect_delay,frames){
     this.frames = frames;
 }
 
+//default units
 var units = {
     "Lasswell": new Unit(1, 4, 1, [33, 36, 39, 42, 51, 54, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108]),
     "Silvie": new Unit(1, 3, 1, [69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108, 111, 114, 117, 120, 123, 126, 129, 132, 135, 138, 141]),
@@ -96,6 +97,7 @@ function findSparks(units, unit_orders){
     var sparks4 = findOverlap(frames4, frames1.concat(frames2,frames3,frames5,frames6));
     var sparks5 = findOverlap(frames5, frames1.concat(frames2,frames3,frames4,frames6));
     var sparks6 = findOverlap(frames6, frames1.concat(frames2,frames3,frames4,frames5));
+
     var percent_sparks = 0.0;
     percent_sparks += sparks1.frames_hit / sparks1.total_frames;
     percent_sparks += sparks2.frames_hit / sparks2.total_frames;
@@ -214,7 +216,83 @@ function run(units){
     }
 }
 
-app.get('/',function(req,res){
+//take a unit directly from the database and convert it to the unit format needed here
+//burst type is bb, sbb, or ubb
+function convertUnit(db_unit, burst_type){
+    var move_type = db_unit["movement"]["skill"]["move type"];
+    var speed_type = db_unit["movement"]["skill"]["move speed type"];
+
+
+    /* TODO:
+        add option to combine frame for units with dual attacks
+        add way to handle units with no attacking burst
+
+    */
+
+    var effect_delay, frames;
+    if(db_unit[burst_type] != undefined){
+        var raw_delay = db_unit[burst_type]["damage frames"][0]["effect delay time(ms)/frame"]; //e.g. 16.7/1
+        frames = db_unit[burst_type]["damage frames"][0]["frame times"];
+    }if(db_unit["sbb"] != undefined){
+        var raw_delay = db_unit["sbb"]["damage frames"][0]["effect delay time(ms)/frame"]; //e.g. 16.7/1
+        // effect_delay = raw_delay.split('/')[1];
+        frames = db_unit["sbb"]["damage frames"][0]["frame times"];
+    }else if(db_unit["bb"] != undefined){
+        var raw_delay = db_unit["bb"]["damage frames"][0]["effect delay time(ms)/frame"]; //e.g. 16.7/1
+        // effect_delay = raw_delay.split('/')[1];
+        frames = db_unit["bb"]["damage frames"][0]["frame times"];
+    }
+    effect_delay = raw_delay.split('/')[1];
+
+    return new Unit(move_type,speed_type,effect_delay,frames);
+    
+}
+
+//load a local database of units and return the unit id
+function getUnitLocal(id){
+    var unit_file = fs.readFileSync("./info-gl.json");
+    var unit_db = JSON.parse(unit_file);
+    return unit_db[id];
+}
+
+//temporary function to generate all OE units currently available (if they exist in the database)
+//to be removed once front end is fully implemented
+function generateOEUnits(){
+    var oe = [10017, 10127, 10557, 10677, 10717, 10737, 10757, 10847, 10897, 10917, 10937, 10947, 10977, 10997, 11017, 11027, 11037, 11047, 11057, 20017, 20157, 20537, 20567, 20637, 20677, 20797, 20817, 20827, 20837, 20857, 20877, 20887, 20907, 20927, 20947, 20967, 20977, 20987, 20997, 30017, 30447, 30517, 30567, 30787, 30797, 30817, 30837, 30847, 30867, 30877, 30897, 30907, 30917, 30927, 30947, 40017, 40507, 40537, 40577, 40767, 40787, 40817, 40827, 40857, 40867, 40877, 40887, 40897, 40907, 40917, 50017, 50287, 50477, 50657, 50757, 50917, 50987, 50997, 51007, 51027, 51037, 51047, 51067, 51087, 51107, 51127, 51137, 51147, 51157, 51167, 51187, 60017, 60027, 60117, 60527, 60667, 61007, 61017, 61027, 61037, 61047, 61057, 61067, 61087, 61097, 61107, 61117, 710197, 710217, 720107, 720157, 720197, 720227, 730227, 730237, 730247, 740197, 740227, 750157, 750167, 750197, 750237, 760017, 760227, 810108, 810178, 810278, 810338, 810357, 810398, 810418, 810508, 820158, 820168, 820178, 820388, 820398, 820418, 830118, 830178, 830188, 830278, 830418, 830518, 840128, 840178, 840278, 840368, 840398, 840418, 840508, 850158, 850167, 850178, 850198, 850368, 850398, 850418, 860128, 860158, 860167, 860178, 860238, 860258, 860278, 860357, 860368, 860428];
+    var msg = "";
+    for(unit in oe){
+        var curUnit = getUnitLocal(oe[unit].toString());
+        
+        msg = "";
+        if(curUnit != undefined){
+            msg += curUnit["name"] + ": ";
+            msg += JSON.stringify(convertUnit(curUnit,"sbb"));
+        }else{
+            msg += "Cannot find " + oe[unit];
+        }
+        console.log(msg);
+    }
+}
+
+//temporary function to see list of current units
+//to be removed once front end is fully implemented
+function getAvailableUnits(){
+    var msg = "";
+    for(u in units){
+        msg += u + "\n";
+    }
+    return msg;
+}
+
+//temporary function to load temporary JSON file
+//to be removed once front end is fully implemented
+function loadOEUnits(){
+    var unit_file = fs.readFileSync("./oe_units.json");
+    units = JSON.parse(unit_file);
+}
+
+
+app.get('/', function (req, res) {
     res.sendFile(__dirname + "/local.html");
 })
 
@@ -222,7 +300,12 @@ app.get('/',function(req,res){
 server.listen(8081, '127.0.0.1', function () {
     var host = server.address().address;
     var port = server.address().port;
-    console.log("Application listening at http://%s:%s", host,port);
+    console.log("Application listening at http://%s:%s", host, port);
 });
 
-run(["Lasswell", "Silvie", "Lauda", "Lid", "Elza", "Hisui"]);
+// use the following for the default values listed above
+// run(["Lasswell", "Silvie", "Lauda", "Lid", "Elza", "Hisui"]);
+
+//use the following if loading from a file
+loadOEUnits();
+run(["Lasswell", "Silent Sentinel Silvie", "Ideal Subject Lauda", "Lid", "Graceful Princess Elza","Heavenly Spiral Hisui"]);
