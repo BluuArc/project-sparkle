@@ -7,6 +7,7 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+var itertools = require('itertools');
 
 function Unit(move_type,speed_type,effect_delay,frames){
     this.move_type = move_type;
@@ -15,6 +16,7 @@ function Unit(move_type,speed_type,effect_delay,frames){
     this.frames = frames;
 }
 
+/* Begin Python port; originally by Hamza */
 //default units
 var units = {
     "Lasswell": new Unit(1, 4, 1, [33, 36, 39, 42, 51, 54, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108]),
@@ -39,11 +41,15 @@ var speed4_frames = { "a": 6, "b": 13, "c": 8, "d": 18, "e": 7, "f": 14 }
 
 var sbb_frame_delay = 2 //Set to 2 for no BB cutoff
 
-var threshold = 90.0 //excludes all positionings/ orders with total percentage of sparks below the threshold
+var threshold = 50.0 //excludes all positionings/ orders with total percentage of sparks below the threshold
+var max_threshold = threshold;
 
 function getFrameRates(name, position, order) { //name = string,position = string "a" or "b" etc, order = number SBB from 1 to 6
+    if(name == "X"){
+        return [];
+    }
+    //get data about unit
     var unit_info = units[name];
-    // console.log(unit_info);
     var move_type = unit_info.move_type;
     var speed_type = unit_info.speed_type;
     var effect_delay = unit_info.effect_delay;
@@ -58,9 +64,9 @@ function getFrameRates(name, position, order) { //name = string,position = strin
             frame_delay = frame_delay + effect_delay + speed4_frames[position];
         //else                   //move types 1, 2, 5 are currently not supported
             //do nothing
-    else if (move_type == 2)    //teleporting unit
+    else if (move_type == 3)    //stationary unit
         frame_delay = frame_delay + effect_delay;
-    // else                   //stationary unit (type 3)
+    // else                   //teleporting unit (type 2)
         //do nothing
 
     //calculate frame rates
@@ -74,41 +80,77 @@ function getFrameRates(name, position, order) { //name = string,position = strin
 function findOverlap(frames1, frames2) {//given two lists of frames, return list in format [frames hit, total frames]
     var frames_hit = 0;
     for(x in frames1){
-        if(frames2.indexOf(frames1[x])){
-            frames_hit += 1;
-        }
+        frames_hit += (frames2.indexOf(frames1[x]) > -1) ? 1 : 0;
+        // if(frames2.indexOf(frames1[x])){
+        //     frames_hit += 1;
+        // }
     }
     var total_frames = frames1.length;
 
     return {frames_hit,total_frames};
 }
 
+function getPositionChar(index){
+    switch(index){
+        case 0: return 'a';
+        case 1: return 'b';
+        case 2: return 'c';
+        case 3: return 'd';
+        case 4: return 'e';
+        case 5: return 'f';
+        case 6: return 'g';
+        default:
+        return 'a';
+    }
+}
+
 //units ["unit a","unit b",...] follows top-most format for positioning, unit_orders like [1,3,4,6,5,2]
 //returns [% sparked, inputs, and list of sparked hits for each unit]
-function findSparks(units, unit_orders){
-    var frames1 = getFrameRates(units[0], "a", unit_orders[0]);
-    var frames2 = getFrameRates(units[1], "b", unit_orders[1]);
-    var frames3 = getFrameRates(units[2], "c", unit_orders[2]);
-    var frames4 = getFrameRates(units[3], "d", unit_orders[3]);
-    var frames5 = getFrameRates(units[4], "e", unit_orders[4]);
-    var frames6 = getFrameRates(units[5], "f", unit_orders[5]);
+function findSparks(units, unit_orders, weights, original_units){
+    var og_units = original_units.slice();
+    var weights_copy = weights.slice();
+    var orderedWeights = [];
+    for(x in units){
+        var index = og_units.indexOf(units[x]);
+        orderedWeights = orderedWeights.concat(weights_copy.splice(index,1));
+        og_units.splice(index);
+    }
     
-    var sparks1 = findOverlap(frames1, frames2.concat(frames3,frames4,frames5,frames6));
-    var sparks2 = findOverlap(frames2, frames1.concat(frames3,frames4,frames5,frames6));
-    var sparks3 = findOverlap(frames3, frames1.concat(frames2,frames4,frames5,frames6));
-    var sparks4 = findOverlap(frames4, frames1.concat(frames2,frames3,frames5,frames6));
-    var sparks5 = findOverlap(frames5, frames1.concat(frames2,frames3,frames4,frames6));
-    var sparks6 = findOverlap(frames6, frames1.concat(frames2,frames3,frames4,frames5));
+
+    var frames = [];
+    for(x in units){
+        var curPosition = getPositionChar(x);
+        var newFrameVal = getFrameRates(units[x],curPosition,unit_orders[x]);
+        frames.push(newFrameVal);
+    }
+
+    var sparks = [];
+    for(x in units){
+        //remove currrent frame from array
+        var tempSubList = frames.slice(0,x).concat(frames.slice(x+1));
+        //concatenate rest of frames
+        var tempMainList = [];
+        for(l in tempSubList){
+            tempMainList = tempMainList.concat(tempSubList[l]);
+        }
+        
+        var newSparkVal = findOverlap(frames[x],tempMainList);
+        sparks.push(newSparkVal);
+    }
+
+
+    var relevantWeights = 0
+    for(x in orderedWeights){
+        relevantWeights += (sparks[x].total_frames != 0) ? orderedWeights[x] : 0;
+    }
 
     var percent_sparks = 0.0;
-    percent_sparks += sparks1.frames_hit / sparks1.total_frames;
-    percent_sparks += sparks2.frames_hit / sparks2.total_frames;
-    percent_sparks += sparks3.frames_hit / sparks3.total_frames;
-    percent_sparks += sparks4.frames_hit / sparks4.total_frames;
-    percent_sparks += sparks5.frames_hit / sparks5.total_frames;
-    percent_sparks += sparks6.frames_hit / sparks6.total_frames;
-    percent_sparks /= 6.0;
-    percent_sparks *= 100.0;
+    for(a in sparks){
+        if(sparks[a].total_frames != 0){
+            percent_sparks += ((sparks[a].frames_hit / sparks[a].total_frames) * (orderedWeights[a]/relevantWeights));
+        }
+    }
+    percent_sparks *= 100;
 
     var result = {
         percent_sparks: percent_sparks,
@@ -116,7 +158,7 @@ function findSparks(units, unit_orders){
             units: units,
             unit_orders: unit_orders
         },
-        sparks: [sparks1, sparks2, sparks3, sparks4, sparks5, sparks6]
+        sparks: sparks
     };
     return result;
 }
@@ -151,41 +193,91 @@ const permutator = (inputArr) => {
     return result;
 }
 
+
+
 //given positioning of units, outputs a sorted list of all possible SBB orders, from least % sparks to most 
-function findBestOrder(units){
+function findBestOrder(units, weights, original_units){
     var all_positions = [];
-    var permutations = permutator([1, 2, 3, 4, 5, 6]);
+    var permute = [];
+    var permute_sum = 0;
+    for (x in units) { //1 for each unit that's not "X", 0 for each "X" (no need to permute those for ordering)
+        var newVal = (units[x] != "X") ? 1 : 0;
+        permute.push(newVal);
+        permute_sum += newVal;
+    }
+    
+    var permutations = itertools.permutationsSync(underscore.range(1,units.length + 1),permute_sum);
+    // var permutations = permutator([1, 2, 3, 4, 5, 6]);
     for(x in permutations){
-        var s = findSparks(units, permutations[x]);
-        // console.log(s.percent_sparks)
+        var curOrders = permutations[x].slice();
+        var orderList = [];
+        for(r in units){
+            var newVal = (permute[r] == 1) ? curOrders.shift() : 0;
+            orderList.push(newVal);
+        }
+        var s = findSparks(units, orderList,weights,original_units);
         if(s.percent_sparks >= threshold){
-            // console.log(s);
+            if(s.percent_sparks >= max_threshold){
+                max_threshold = s.percent_sparks;
+            }
             all_positions.push(s);
         }
     }
     all_positions.sort(function(x,y){
-        return x.percent_sparks - y.percent_sparks;
+        return (roundFloat(x.percent_sparks) - roundFloat(y.percent_sparks));
     });
-    // console.log(all_positions);
     return all_positions;
 }
 
-function findBestPositions(units) { //given set of units, finds best order of positioning and outputs list of positioning+order for sparking (from least to most % sparks)
+function roundFloat(input){
+    return Math.round(input*100.0) / 100.0;
+}
+
+function findBestSetup(units, weights) { //given set of units, finds best order of positioning and outputs list of positioning+order for sparking (from least to most % sparks)
     var all_orders = [];
+    // var permutations = uniquePermutations(units);
     var permutations = permutator(units);
     for(x in permutations){
-        all_orders = all_orders.concat(findBestOrder(permutations[x]));
+        all_orders = all_orders.concat(findBestOrder(permutations[x],weights,units));
     }
+
     all_orders.sort(function(x,y){
-        return x.percent_sparks - y.percent_sparks;
+        return (roundFloat(y.percent_sparks) - roundFloat(x.percent_sparks));
     });
-    // console.log(all_orders);
     return all_orders;
 }
 
+function uniquePermutations(list){
+    if(list.length == 1){
+        return [list];
+    }else{
+        var output = [];
+        for(elem in list){
+            //create a copy of the list w/o the current elem
+            var copy = [];
+            for(x in list){
+                if(x != elem){
+                    copy.push(list[x]);
+                }
+            }
+
+            //recursively create output
+            var newUnique = uniquePermutations(copy);
+            for(y in newUnique){
+                output.push(newUnique[y].concat(list[elem]));
+            }
+        }
+        return output;
+    }
+}
+
 function run(units){
-    var best = findBestPositions(units);
-    // console.log(best);
+    // var best = findBestPositions(units);
+    var weights = [];
+    for(x in units){
+        weights.push(1);
+    }
+    var best = findBestSetup(units,weights);
     var numBest = 0;
     for(x in best){
         numBest++;
@@ -216,7 +308,10 @@ function run(units){
             break;
         }
     }
+    console.log("Max: " + max_threshold);
 }
+
+/* End Python port; originally by Hamza */
 
 //take a unit directly from the database and convert it to the unit format needed here
 //burst type is bb, sbb, or ubb
