@@ -18,6 +18,8 @@ function Unit(move_type,speed_type,effect_delay,frames){
 //default units
 var units = {
     "Lasswell": new Unit(1, 4, 1, [33, 36, 39, 42, 51, 54, 66, 69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108]),
+    "Azurai": new Unit(3, 9999, 6, [99, 108, 117, 123, 126, 132, 138, 141, 144, 147, 150, 153]),
+    "Regil": new Unit(1, 4, 1, [11, 14, 17, 20, 38, 41, 44, 47, 50, 53, 56, 86, 90, 94, 98, 102, 106, 110, 114]),
     "Silvie": new Unit(1, 3, 1, [69, 72, 75, 78, 81, 84, 87, 90, 93, 96, 99, 102, 105, 108, 111, 114, 117, 120, 123, 126, 129, 132, 135, 138, 141]),
     "Long": new Unit(1, 3, 1, [18, 21, 24, 27, 30, 33, 36, 39]),
     "Lauda": new Unit(1, 4, 3, [56, 59, 62, 65, 68, 71, 74, 77, 80, 83, 86, 89, 92, 95, 98, 101, 104, 107, 110, 113, 116, 119, 122, 125, 128, 131, 134, 137, 140]),
@@ -304,8 +306,8 @@ server.listen(8081, '127.0.0.1', function () {
 });
 
 // use the following for the default values listed above
-// run(["Lasswell", "Silvie", "Lauda", "Lid", "Elza", "Hisui"]);
+run(["Lasswell", "Silvie", "Lauda", "Lid", "Elza", "Hisui"]);
 
 //use the following if loading from a file
-loadOEUnits();
-run(["Lasswell", "Silent Sentinel Silvie", "Ideal Subject Lauda", "Lid", "Graceful Princess Elza","Heavenly Spiral Hisui"]);
+// loadOEUnits();
+// run(["Lasswell", "Silent Sentinel Silvie", "Ideal Subject Lauda", "Lid", "Graceful Princess Elza","Heavenly Spiral Hisui"]);
