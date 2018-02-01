@@ -2,97 +2,128 @@
 <html>
 
 <head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Local Version</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.css">
     <style>
-        /*from https://www.w3schools.com/css/css_align.asp*/
-        .center {
-            margin: auto;
-            width: 50%;
-            border: 3px solid #73AD21;
-            padding: 10px;
+        #squad-maker .column.squad-entry {
+            padding: 0 !important;
         }
-        .right { 
-            margin: auto;
+
+        .squad-entry .ui.card {
+            width: auto;
+        }
+
+        @media only screen and (min-width: 764px) {
+            #squad-maker {
+                max-width: 90% !important;
+            }
         }
     </style>
 </head>
-
-
-
-<script src="/socket.io/socket.io.js"></script>
-<script src="https://code.jquery.com/jquery-1.11.1.js"></script>
-<script>
-    var socket = io();
-    $(function () {
-        socket.on('finish calculation', function (msg) { 
-            //put result in lower text area
-        });
-
-        socket.on('load units',function(msg){
-            //load unit names into dropdowns
-        });
-    });
-
-    function submitSquad(){
-        var data = "";
-        //get dropdown data and send it to application
-        socket.emit('send calculation', data);
-    }
-    
-</script>
-
 <body>
-    <div id="squad-maker" class="center">
-        <textarea id="unit-bank" style="display:none"></textarea>
-        <table style="text-align: center">
-            <!--headers-->
-            <tr>
-                <th>Front Position</th><th>Unit</th>
-                <th>Rear Position</th><th>Unit</th>
-            </tr>
+    <div class="ui sizer vertical segment center aligned"><div class='ui huge header'>Project Sparkle</div></div>
+    <div id="squad-maker" class="ui text container">
+        <div id="squad-selector" class="centered ui two column stackable grid">
 
-            <!--top row-->
-            <tr>
-                <td>Top Left:</td>
-                <td><select id="top-left">
-                    <option>top left spot</option>
-                </select></td>
-                <td>Top Right:</td>
-                <td><select id="top-right">
-                    <option>top right spot</option>
-                </select></td>
-            </tr>
-
-            <!--middle row-->
-            <tr>
-                <td>Middle Left:</td>
-                <td><select id="middle-left">
-                    <option>middle left spot</option>
-                </select></td>
-                <td>Middle Right:</td>
-                <td><select id="middle-right">
-                    <option>middle right spot</option>
-                </select></td>
-            </tr>
-
-            <!--bottom row-->
-            <tr>
-                <td>Bottom Left:</td>
-                <td><select id="bottom-left">
-                    <option>bottom left spot</option>
-                </select></td>
-                <td>Bottom Right:</td>
-                <td><select id="bottom-right">
-                    <option>bottom right spot</option>
-                </select></td>
-            </tr>
-        </table>
-        <button class="right">Submit</button>
+        </div>
+        
     </div><!-- end squad-maker -->
 
-    <div id="results-area" class="center">
+    <div id="results-area" class="center" style="display:none">
         <textarea id="results" style="width:100%"></textarea>
     </div>
+
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/4.13.0/d3.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.js"></script>
+    <script>
+        var socket = io();
+        $(function () {
+            socket.on('finish calculation', function (msg) {
+                //put result in lower text area
+            });
+
+            socket.on('load units', function (msg) {
+                //load unit names into dropdowns
+            });
+        });
+
+        function submitSquad() {
+            var data = "";
+            //get dropdown data and send it to application
+            socket.emit('send calculation', data);
+        }
+    </script>
+    <script>
+        $(document).ready(init);
+
+        function init() {
+            let positionIDs = ['top-left','top-right','middle-left','middle-right','bottom-left', 'bottom-right'];
+            let skills = ['NAtk', 'BB', 'SBB', 'UBB'];
+            let testUnits = ["2* Vargas", "3* Vargas", "4* Vargas", "4* Vargas"];
+            
+            let squadMaker = d3.select("#squad-maker");
+            let squadEntries = squadMaker.select('#squad-selector').selectAll(".squad-entry")
+                .data(positionIDs).enter()
+                .append('div').classed('column squad-entry', true)
+                    .attr('id', d => d);
+            squadEntries.each(function(d){
+                let elem = d3.select(this);
+
+                let card = elem.append('div').classed('ui card', true);
+
+                let cardContent = card.append('div').classed('content', true);
+
+                cardContent.append('img').classed('ui left floated mini circular image', true)
+                    .attr('id', 'unit-img').attr('src','https://semantic-ui.com/images/wireframe/square-image.png');
+
+                cardContent.append('span').classed('right floated meta', true)
+                    .attr('id','unit-rarity').text("OE");
+
+                // unit selection
+                let unitSelect = cardContent.append('div').classed('content', true)
+                    .append('div').classed('ui floating search scrolling dropdown button labeled', true);
+
+                unitSelect.append('span').classed('text', true).text("Select a Unit");
+
+                unitSelect.append('i').classed('dropdown icon', true);
+
+                let unitMenu = unitSelect.append('div').classed('menu', true);
+
+                unitMenu.selectAll('.item').data(testUnits).enter()
+                    .append('div').classed('item',true)
+                    .text(d => d);
+
+                $(unitSelect.node()).dropdown();
+                
+
+                // burst selection
+                // based on https://semantic-ui.com/modules/dropdown.html
+                let burstSelectionArea = cardContent.append('div').classed('content', true)
+                    .append('div').classed('ui floating search scrolling dropdown button labeled', true);
+
+                burstSelectionArea.append('input').attr('type', 'hidden')
+                    .attr('name', 'skill-type');
+
+                burstSelectionArea.append('div').classed('default text', true)
+                    .text("SBB");
+
+                burstSelectionArea.append('i').classed('dropdown icon', true);
+
+                let burstSelectionMenu = burstSelectionArea.append('div').classed('menu', true);
+
+                burstSelectionMenu.selectAll('.item').data(skills)
+                    .enter().append('div').classed('item', true)
+                    .attr('data-value', d => d).text(d => d);
+
+                $(burstSelectionArea.node()).dropdown();
+                
+            });
+        }
+    </script>
+
 </body>
 
 </html>
