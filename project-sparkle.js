@@ -10,13 +10,21 @@ function getUnit(id) {
   return unitData[id];
 }
 
+function getTeleporterOffset(unitData) {
+  const filteredName = Object.keys(teleporterData)
+    .filter(name => unitData.name.toLowerCase().indexOf(name) > -1)[0];
+  console.log(unitData.name, filteredName, teleporterData[filteredName]);
+  return teleporterData[filteredName] || 0;
+}
+
 // returns an array of attacks, where each attack is an object of st/aoe classification keyed by frame times
 function getOriginalFramesForUnit(id, type) {
   const attackingProcs = ['1', '13', '14', '27', '28', '29', '47', '61', '64', '75', '11000'].concat(['46', '48', '97']);
   const unit = getUnit(id);
   const allFrames = unit[type]['damage frames'];
   const moveType = +unit.movement.skill['move type'];
-  const offset = (moveType === 3 ? +unit.movement.skill['move speed'] : 0); // TODO: add read from teleporter data here
+  const offset = (moveType === 3 ? +unit.movement.skill['move speed'] : 0) +
+    (+moveType === 2 ? getTeleporterOffset(unit) : 0); // TODO: add read from teleporter data here
   let isAOE = true; // TODO: add support for skills with multiple AOE attacks
   return allFrames.filter(procFrame => attackingProcs.indexOf(procFrame['proc id'].toString()) > -1)
     .map(procFrame => {
@@ -153,6 +161,7 @@ function findBestPositions(squad = [], threshold = 0.5) {
   const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
   const permutations = getAllPermutations(positions);
   let numComplete = 0;
+  let lastLoggedPercent = -1;
   let results = [];
   permutations.forEach(permutation => {
     const tempSquad = permutation.map((position, index) => {
@@ -165,10 +174,13 @@ function findBestPositions(squad = [], threshold = 0.5) {
       if (result.actualSparks / result.possibleSparks >= threshold) {
         results.push(result);
       }
-    })
+    });
 
-    if (Math.floor((++numComplete / permutations.length)*100) % 5 === 0) {
-      console.log(`Finding Positions: ${((numComplete / permutations.length)*100).toFixed(2)}% complete (${permutations.length - numComplete} remaining)`);
+    const currentPercent = Math.floor((++numComplete / permutations.length) * 100);
+
+    if (currentPercent % 5 === 0 && currentPercent !== lastLoggedPercent) {
+      lastLoggedPercent = currentPercent;
+      console.log(`Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`);
     }
   });
 
@@ -180,7 +192,7 @@ function findBestPositions(squad = [], threshold = 0.5) {
   }).slice(0, 10);
 }
 
-const exampleData = JSON.parse(fs.readFileSync('input-example.json', 'utf8'));
+const exampleData = JSON.parse(fs.readFileSync('input.json', 'utf8'));
 const result = findBestPositions(exampleData);
 fs.writeFileSync('output.json', JSON.stringify(result, null, 2), 'utf8');
 console.log('Done');
