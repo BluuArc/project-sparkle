@@ -37,6 +37,7 @@ function getBattleFrames(squadEntry = {}, numEnemies = 6) {
   if (!squadEntry.originalFrames) {
     squadEntry.originalFrames = getOriginalFramesForUnit(squadEntry.id, squadEntry.type);
   }
+
   const unit = getUnit(squadEntry.id);
   const moveType = +unit.movement.skill['move type'];
   const speedType = unit.movement.skill['move speed type'].toString();
@@ -116,8 +117,8 @@ function getAllPermutations(arr = []) {
   }
 
   arr.forEach((d, i) => {
-    const remaining = arr.slice(0, i).concat(arr.slice(i + 1, arr.length));
-    const innerPermutations = getAllPermutations(remaining);
+    const remainingElements = arr.slice(0, i).concat(arr.slice(i + 1, arr.length));
+    const innerPermutations = getAllPermutations(remainingElements);
     innerPermutations.forEach(permutation => {
       results.push([d].concat(permutation));
     });
@@ -125,5 +126,61 @@ function getAllPermutations(arr = []) {
   return results;
 }
 
+// threshold is minimum value of squad sparks to keep squad
+function findBestOrders(squad = [], threshold = 0.5) {
+  const permutations = getAllPermutations(Object.keys(squad).map(index => +index + 1));
+  let results = [];
+  permutations.forEach(permutation => {
+    const tempSquad = permutation.map((bbOrder, index) => {
+      squad[index].bbOrder = bbOrder;
+      return squad[index];
+    });
+    const result = processSquad(tempSquad);
+    if (result.actualSparks / result.possibleSparks >= threshold) {
+      results.push(result);
+    }
+  });
+
+  // return top 10 results
+  return results.sort((a, b) => {
+    const resultA = a.actualSparks / a.possibleSparks;
+    const resultB = b.actualSparks / b.possibleSparks;
+    return resultB - resultA; // sort in descending order
+  }).slice(0,10);
+}
+
+function findBestPositions(squad = [], threshold = 0.5) {
+  const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
+  const permutations = getAllPermutations(positions);
+  let numComplete = 0;
+  let results = [];
+  permutations.forEach(permutation => {
+    const tempSquad = permutation.map((position, index) => {
+      squad[index].position = position;
+      return squad[index];
+    });
+    const orderResults = findBestOrders(tempSquad, threshold);
+    
+    orderResults.forEach(result => {
+      if (result.actualSparks / result.possibleSparks >= threshold) {
+        results.push(result);
+      }
+    })
+
+    if (Math.floor((++numComplete / permutations.length)*100) % 5 === 0) {
+      console.log(`Finding Positions: ${((numComplete / permutations.length)*100).toFixed(2)}% complete (${permutations.length - numComplete} remaining)`);
+    }
+  });
+
+  // return top 10 results
+  return results.sort((a, b) => {
+    const resultA = a.actualSparks / a.possibleSparks;
+    const resultB = b.actualSparks / b.possibleSparks;
+    return resultB - resultA; // sort in descending order
+  }).slice(0, 10);
+}
+
 const exampleData = JSON.parse(fs.readFileSync('input-example.json', 'utf8'));
-console.log(processSquad(exampleData));
+const result = findBestPositions(exampleData);
+fs.writeFileSync('output.json', JSON.stringify(result, null, 2), 'utf8');
+console.log('Done');
