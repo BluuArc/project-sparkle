@@ -1,0 +1,44 @@
+[
+  {
+    "position": "top-left",
+    "originalFrames": null,
+    "id": "30817",
+    "bbOrder": 4,
+    "type": "sbb"
+  },
+  {
+    "position": "top-right",
+    "originalFrames": null,
+    "id": "840128",
+    "bbOrder": 1,
+    "type": "sbb"
+  },
+  {
+    "position": "middle-left",
+    "originalFrames": null,
+    "id": "840398",
+    "bbOrder": 2,
+    "type": "sbb"
+  },
+  {
+    "position": "middle-right",
+    "originalFrames": null,
+    "id": "840508",
+    "bbOrder": 5,
+    "type": "sbb"
+  },
+  {
+    "position": "bottom-left",
+    "originalFrames": null,
+    "id": "51037",
+    "bbOrder": 6,
+    "type": "sbb"
+  },
+  {
+    "position": "bottom-right",
+    "originalFrames": null,
+    "id": "820398",
+    "bbOrder": 3,
+    "type": "sbb"
+  }
+]
