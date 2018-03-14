@@ -106,5 +106,24 @@ function processSquad(units = []) {
   };
 }
 
+// original source: https://initjs.org/all-permutations-of-a-set-f1be174c79f8
+function getAllPermutations(arr = []) {
+  const results = [];
+
+  if (arr.length === 1) {
+    results.push(arr);
+    return results;
+  }
+
+  arr.forEach((d, i) => {
+    const remaining = arr.slice(0, i).concat(arr.slice(i + 1, arr.length));
+    const innerPermutations = getAllPermutations(remaining);
+    innerPermutations.forEach(permutation => {
+      results.push([d].concat(permutation));
+    });
+  });
+  return results;
+}
+
 const exampleData = JSON.parse(fs.readFileSync('input-example.json', 'utf8'));
 console.log(processSquad(exampleData));
