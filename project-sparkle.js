@@ -60,16 +60,19 @@ function getBattleFrames(squadEntry = {}, numEnemies = 6) {
     Object.keys(attack).forEach(frame => {
       const actualFrame = (+frame + frameDelay);
       if (!offsetFrames[actualFrame]) {
-        offsetFrames[actualFrame] = 0;
+        offsetFrames[actualFrame] = {
+          aoe: 0,
+          st: 0
+        };
       }
-      offsetFrames[actualFrame] += (attack[frame] === 'aoe') ? numEnemies : 1;
+      offsetFrames[actualFrame][attack[frame]] += 1;
     });
   });
   return offsetFrames;
 }
 
 // should be in format specified in input-example.json
-function processSquad(units = []) {
+function processSquad(units = [], numEnemies = 6) {
   const battleFrames = {};
 
   // initialize battle frames
@@ -78,10 +81,14 @@ function processSquad(units = []) {
     Object.keys(unitFrames)
       .forEach(frame => {
         if (!battleFrames[+frame]) {
-          battleFrames[+frame] = 0;
+          battleFrames[+frame] = {
+            aoe: 0,
+            st: 0
+          };
         }
 
-        battleFrames[+frame] += unitFrames[frame];
+        battleFrames[+frame].aoe += unitFrames[frame].aoe;
+        battleFrames[+frame].st += unitFrames[frame].st;
       });
     unit.battleFrames = unitFrames;
   });
@@ -90,11 +97,28 @@ function processSquad(units = []) {
   let actualSparksSquad = 0;
   const sparkResults = units.map(unit => {
     let possibleSparks = Object.keys(unit.battleFrames)
-      .map(frame => unit.battleFrames[+frame])
+      .map(frame => unit.battleFrames[+frame].aoe * numEnemies + unit.battleFrames[+frame].st)
       .reduce((acc, val) => acc + val, 0);
     let actualSparks = Object.keys(unit.battleFrames)
-      .map(frame => (battleFrames[+frame] - unit.battleFrames[+frame] > 0) ? unit.battleFrames[+frame] : 0) 
-      .reduce((acc, val) => acc + val, 0);
+      .map(frame => {
+        const { aoe, st } = battleFrames[+frame];
+        const [ remainingAoe, remainingSt ] = [aoe - unit.battleFrames[frame].aoe, st - unit.battleFrames[frame].st];
+        const hasAoe = unit.battleFrames[frame].aoe > 0 && remainingAoe > 0;
+        const hasSt = (
+          unit.battleFrames[frame].st > 0 && remainingSt > 0 ||
+          unit.battleFrames[frame].st > 0 && remainingAoe > 0 ||
+          unit.battleFrames[frame].aoe > 0 && remainingSt > 0 && !hasAoe
+        );
+        let count = 0;
+        if (hasAoe) {
+          count += unit.battleFrames[frame].aoe * numEnemies;
+        }
+
+        if (hasSt) {
+          count += Math.max(unit.battleFrames[frame].st, 1);
+        }
+        return count;
+      }).reduce((acc, val) => acc + val, 0);
 
     possibleSparksSquad += possibleSparks;
     actualSparksSquad += actualSparks;
@@ -109,9 +133,18 @@ function processSquad(units = []) {
     };
   });
 
+  const perUnitPercentages = sparkResults
+    .filter(u => u.possibleSparks > 0)
+    .map(u => u.actualSparks / u.possibleSparks);
+  
+  const weightedPercentage = perUnitPercentages
+    .map(val => val * (1 / perUnitPercentages.length))
+    .reduce((acc, val) => acc + val, 0);
+
   return {
     actualSparks: actualSparksSquad,
     possibleSparks: possibleSparksSquad,
+    weightedPercentage,
     squad: sparkResults
   };
 }
@@ -163,24 +196,22 @@ function findBestOrders(squad = [], threshold = 0.5) {
         };
       }).filter(s => !!s).concat(withOrders)
       const result = processSquad(tempSquad);
-      if (result.actualSparks / result.possibleSparks >= threshold) {
+      if (result.weightedPercentage >= threshold) {
         results.push(result);
       }
     });
   } else {
     console.log('All orders specfied, running sim on single order.');
     const result = processSquad(withOrders);
-    if (result.actualSparks / result.possibleSparks >= threshold) {
+    if (result.weightedPercentage >= threshold) {
       results.push(result);
     }
   }
 
-  // return top 10 results
-  return results.sort((a, b) => {
-    const resultA = a.actualSparks / a.possibleSparks;
-    const resultB = b.actualSparks / b.possibleSparks;
-    return resultB - resultA; // sort in descending order
-  }).slice(0,10);
+  // return top 10 results in descending order
+  return results
+    .sort((a, b) => resultB.weightedPercentage - resultA.weightedPercentage)
+    .slice(0,10);
 }
 
 function findBestPositions(squad = [], threshold = 0.5) {
@@ -219,7 +250,7 @@ function findBestPositions(squad = [], threshold = 0.5) {
       const orderResults = findBestOrders(tempSquad, threshold);
       
       orderResults.forEach(result => {
-        if (result.actualSparks / result.possibleSparks >= threshold) {
+        if (result.weightedPercentage >= threshold) {
           results.push(result);
         }
       });
@@ -237,18 +268,16 @@ function findBestPositions(squad = [], threshold = 0.5) {
     const orderResults = findBestOrders(withPositions, threshold);
 
     orderResults.forEach(result => {
-      if (result.actualSparks / result.possibleSparks >= threshold) {
+      if (result.weightedPercentage >= threshold) {
         results.push(result);
       }
     });
   }
 
-  // return top 10 results
-  return results.sort((a, b) => {
-    const resultA = a.actualSparks / a.possibleSparks;
-    const resultB = b.actualSparks / b.possibleSparks;
-    return resultB - resultA; // sort in descending order
-  }).slice(0, 10);
+  // return top 10 results in descending order
+  return results
+    .sort((a, b) => resultB.weightedPercentage - resultA.weightedPercentage)
+    .slice(0, 10);
 }
 
 const exampleData = JSONC.parse(fs.readFileSync('input.json', 'utf8'));
