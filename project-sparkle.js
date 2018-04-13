@@ -210,7 +210,7 @@ function findBestOrders(squad = [], threshold = 0.5) {
 
   // return top 10 results in descending order
   return results
-    .sort((a, b) => resultB.weightedPercentage - resultA.weightedPercentage)
+    .sort((a, b) => b.weightedPercentage - a.weightedPercentage)
     .slice(0,10);
 }
 
@@ -276,7 +276,7 @@ function findBestPositions(squad = [], threshold = 0.5) {
 
   // return top 10 results in descending order
   return results
-    .sort((a, b) => resultB.weightedPercentage - resultA.weightedPercentage)
+    .sort((a, b) => b.weightedPercentage - a.weightedPercentage)
     .slice(0, 10);
 }
 
