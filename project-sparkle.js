@@ -1,4 +1,5 @@
 const fs = require('fs');
+const JSONC = require('json-comments');
 
 const movespeedOffsets = JSON.parse(fs.readFileSync('movespeedOffsets.json', 'utf8'));
 const teleporterData = JSON.parse(fs.readFileSync('teleporterData.json', 'utf8'));
@@ -147,7 +148,6 @@ function findBestOrders(squad = [], threshold = 0.5) {
   });
   const inputOrders = withOrders.map(unit => +unit.bbOrder);
   const permutedOrders = allOrders.filter(order => inputOrders.indexOf(order) === -1);
-  console.log({ permutedOrders });
   const permutations = getAllPermutations(permutedOrders);
   let results = [];
   if (permutations.length > 0) {
@@ -158,8 +158,8 @@ function findBestOrders(squad = [], threshold = 0.5) {
         }
 
         return {
+          ...(noOrders[index]),
           bbOrder,
-          ...(noOrders[index])
         };
       }).filter(s => !!s).concat(withOrders)
       const result = processSquad(tempSquad);
@@ -212,8 +212,8 @@ function findBestPositions(squad = [], threshold = 0.5) {
         }
   
         return {
+          ...(noPositions[index]),
           position,
-          ...(noPositions[index])
         };
       }).filter(s => !!s).concat(withPositions);
       const orderResults = findBestOrders(tempSquad, threshold);
@@ -251,7 +251,7 @@ function findBestPositions(squad = [], threshold = 0.5) {
   }).slice(0, 10);
 }
 
-const exampleData = JSON.parse(fs.readFileSync('input.json', 'utf8'));
+const exampleData = JSONC.parse(fs.readFileSync('input.json', 'utf8'));
 const result = findBestPositions(exampleData);
 fs.writeFileSync('output.json', JSON.stringify(result, null, 2), 'utf8');
 console.log('Done');
