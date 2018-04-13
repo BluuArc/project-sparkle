@@ -136,18 +136,44 @@ function getAllPermutations(arr = []) {
 
 // threshold is minimum value of squad sparks to keep squad
 function findBestOrders(squad = [], threshold = 0.5) {
-  const permutations = getAllPermutations(Object.keys(squad).map(index => +index + 1));
+  const allOrders = [1, 2, 3, 4, 5, 6];
+  const withOrders = [], noOrders = [];
+  squad.forEach(unit => {
+    if (!isNaN(unit.bbOrder) && allOrders.indexOf(unit.bbOrder) > -1) {
+      withOrders.push(unit);
+    } else {
+      noOrders.push(unit);
+    }
+  });
+  const inputOrders = withOrders.map(unit => +unit.bbOrder);
+  const permutedOrders = allOrders.filter(order => inputOrders.indexOf(order) === -1);
+  console.log({ permutedOrders });
+  const permutations = getAllPermutations(permutedOrders);
   let results = [];
-  permutations.forEach(permutation => {
-    const tempSquad = permutation.map((bbOrder, index) => {
-      squad[index].bbOrder = bbOrder;
-      return squad[index];
+  if (permutations.length > 0) {
+    permutations.forEach(permutation => {
+      const tempSquad = permutation.map((bbOrder, index) => {
+        if (!noOrders[index]) {
+          return undefined;
+        }
+
+        return {
+          bbOrder,
+          ...(noOrders[index])
+        };
+      }).filter(s => !!s).concat(withOrders)
+      const result = processSquad(tempSquad);
+      if (result.actualSparks / result.possibleSparks >= threshold) {
+        results.push(result);
+      }
     });
-    const result = processSquad(tempSquad);
+  } else {
+    console.log('All orders specfied, running sim on single order.');
+    const result = processSquad(withOrders);
     if (result.actualSparks / result.possibleSparks >= threshold) {
       results.push(result);
     }
-  });
+  }
 
   // return top 10 results
   return results.sort((a, b) => {
