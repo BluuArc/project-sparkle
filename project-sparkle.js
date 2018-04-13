@@ -13,7 +13,7 @@ function getUnit(id) {
 function getTeleporterOffset(unitData) {
   const filteredName = Object.keys(teleporterData)
     .filter(name => unitData.name.toLowerCase().indexOf(name) > -1)[0];
-  console.log(unitData.name, filteredName, teleporterData[filteredName]);
+  // console.log(unitData.name, filteredName, teleporterData[filteredName]);
   return teleporterData[filteredName] || 0;
 }
 
@@ -158,31 +158,64 @@ function findBestOrders(squad = [], threshold = 0.5) {
 }
 
 function findBestPositions(squad = [], threshold = 0.5) {
-  const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
-  const permutations = getAllPermutations(positions);
+  const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
+
+  // separate squad into 2 groups, 1 for units with specified positions, 1 for units without positions
+  const withPositions = [], noPositions = [];
+  squad.forEach(unit => {
+    if (unit.position && allPositions.indexOf(unit.position) > -1) {
+      withPositions.push(unit);
+    } else {
+      noPositions.push(unit);
+    }
+  });
+  const inputPositions = withPositions.map(unit => unit.position);
+
+  // positions that aren't specified in squad
+  const permutedPositions = allPositions.filter(p => inputPositions.indexOf(p) === -1);
+  console.log({ permutedPositions })
+  const permutations = getAllPermutations(permutedPositions);
   let numComplete = 0;
   let lastLoggedPercent = -1;
   let results = [];
-  permutations.forEach(permutation => {
-    const tempSquad = permutation.map((position, index) => {
-      squad[index].position = position;
-      return squad[index];
+  if (permutations.length > 0) {
+    permutations.forEach(permutation => {
+      const tempSquad = permutation.map((position, index) => {
+        if (!noPositions[index]) {
+          return undefined;
+        }
+  
+        return {
+          position,
+          ...(noPositions[index])
+        };
+      }).filter(s => !!s).concat(withPositions);
+      const orderResults = findBestOrders(tempSquad, threshold);
+      
+      orderResults.forEach(result => {
+        if (result.actualSparks / result.possibleSparks >= threshold) {
+          results.push(result);
+        }
+      });
+  
+      const currentPercent = Math.floor((++numComplete / permutations.length) * 100);
+  
+      if (currentPercent % 5 === 0 && currentPercent !== lastLoggedPercent) {
+        lastLoggedPercent = currentPercent;
+        console.log(`Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`);
+      }
     });
-    const orderResults = findBestOrders(tempSquad, threshold);
-    
+  } else {
+    // case when all positions are specified
+    console.log('All positions specified, looking for best orders');
+    const orderResults = findBestOrders(withPositions, threshold);
+
     orderResults.forEach(result => {
       if (result.actualSparks / result.possibleSparks >= threshold) {
         results.push(result);
       }
     });
-
-    const currentPercent = Math.floor((++numComplete / permutations.length) * 100);
-
-    if (currentPercent % 5 === 0 && currentPercent !== lastLoggedPercent) {
-      lastLoggedPercent = currentPercent;
-      console.log(`Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`);
-    }
-  });
+  }
 
   // return top 10 results
   return results.sort((a, b) => {
