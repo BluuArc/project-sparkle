@@ -163,11 +163,44 @@ test('only units specified, with progress event handler - 100% spark squad', () 
   });
 
   const results = sparkSim.run(input, { sortResults: true, });
-
   const actualResult = results[0];
-
   console.log(actualResult);
-
   expect(actualResult.weightedPercentage).toBeCloseTo(1.0);
+});
 
+test('squad with 2 specified, 4 "(any)" units', () => {
+  const input = [
+    {
+      'originalFrames': null,
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'originalFrames': null,
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'X',
+    },
+  ];
+
+  sparkSim.onProgress(event => {
+    console.log(event.message);
+  });
+
+  const results = sparkSim.run(input, { sortResults: true, });
+  const actualResult = results[0];
+  console.log(actualResult);
+  // should result in perfectly sparking both units
+  expect(actualResult.weightedPercentage).toBeCloseTo(1.0);
 });

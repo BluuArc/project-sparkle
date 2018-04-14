@@ -118,9 +118,12 @@ class SparkSimulator {
 
   // given a squad entry, return an object keyed by frame times where each value is a count of number of units attacking at that frame time
   getBattleFrames(squadEntry = {}) {
+    if (squadEntry.id === 'X') {
+      return {};
+    }
     const position = squadEntry.position;
     if (!squadEntry.originalFrames) {
-      squadEntry.originalFrames = this.getOriginalFramesForUnit(squadEntry.id, squadEntry.type);
+      squadEntry.originalFrames = this.getOriginalFramesForUnit(squadEntry.id, squadEntry.type || 'sbb');
     }
 
     const unit = this.getUnit(squadEntry.id);
@@ -199,9 +202,13 @@ class SparkSimulator {
 
       possibleSparksSquad += possibleSparks;
       actualSparksSquad += actualSparks;
+      const aliasMap = {
+        X: '(Any)',
+        E: '(Empty)'
+      };
       return {
         id: unit.id,
-        alias: unit.alias,
+        alias: unit.alias || aliasMap[unit.id],
         position: unit.position,
         bbOrder: unit.bbOrder,
         type: unit.type,
