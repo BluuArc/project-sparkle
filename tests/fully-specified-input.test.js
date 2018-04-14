@@ -1,121 +1,117 @@
 const fs = require('fs');
 const SparkSim = require('../src/bf-spark-sim');
 
-const movespeedOffsets = JSON.parse(fs.readFileSync('../movespeedOffsets.json', 'utf8'));
-const teleporterData = JSON.parse(fs.readFileSync('../teleporterData.json', 'utf8'));
-const unitData = JSON.parse(fs.readFileSync('../info-gl.json', 'utf8'));
+const unitData = JSON.parse(fs.readFileSync('info-gl.json', 'utf8'));
 
 const sparkSim = new SparkSim({
-  movespeedOffsets,
-  teleporterData,
-  getUnit: id => unitData[id]
+  getUnit: id => unitData[id],
 });
 
 test('fully specified input - fire squad', () => {
   const expectedSquadResult = [
     {
-      "id": "11047",
-      "alias": "Infernal Pyre Rugahr",
-      "position": "top-left",
-      "bbOrder": 6,
-      "type": "sbb",
-      "actualSparks": 89,
-      "possibleSparks": 89
+      'id': '11047',
+      'alias': 'Infernal Pyre Rugahr',
+      'position': 'top-left',
+      'bbOrder': 6,
+      'type': 'sbb',
+      'actualSparks': 89,
+      'possibleSparks': 89,
     },
     {
-      "id": "10257",
-      "alias": "Vesta Padma Michele",
-      "position": "top-right",
-      "bbOrder": 2,
-      "type": "sbb",
-      "actualSparks": 135,
-      "possibleSparks": 228
+      'id': '10257',
+      'alias': 'Vesta Padma Michele',
+      'position': 'top-right',
+      'bbOrder': 2,
+      'type': 'sbb',
+      'actualSparks': 135,
+      'possibleSparks': 228,
     },
     {
-      "id": "60497",
-      "alias": "Necromancer Lilly Matah",
-      "position": "middle-left",
-      "bbOrder": 3,
-      "type": "sbb",
-      "actualSparks": 0,
-      "possibleSparks": 0
+      'id': '60497',
+      'alias': 'Necromancer Lilly Matah',
+      'position': 'middle-left',
+      'bbOrder': 3,
+      'type': 'sbb',
+      'actualSparks': 0,
+      'possibleSparks': 0,
     },
     {
-      "id": "810278",
-      "alias": "Starpyre Lancer Zeis",
-      "position": "middle-right",
-      "bbOrder": 4,
-      "type": "sbb",
-      "actualSparks": 141,
-      "possibleSparks": 141
+      'id': '810278',
+      'alias': 'Starpyre Lancer Zeis',
+      'position': 'middle-right',
+      'bbOrder': 4,
+      'type': 'sbb',
+      'actualSparks': 141,
+      'possibleSparks': 141,
     },
     {
-      "id": "11047",
-      "alias": "Infernal Pyre Rugahr",
-      "position": "bottom-left",
-      "bbOrder": 5,
-      "type": "sbb",
-      "actualSparks": 89,
-      "possibleSparks": 89
+      'id': '11047',
+      'alias': 'Infernal Pyre Rugahr',
+      'position': 'bottom-left',
+      'bbOrder': 5,
+      'type': 'sbb',
+      'actualSparks': 89,
+      'possibleSparks': 89,
     },
     {
-      "id": "810278",
-      "alias": "Starpyre Lancer Zeis",
-      "position": "bottom-right",
-      "bbOrder": 1,
-      "type": "sbb",
-      "actualSparks": 141,
-      "possibleSparks": 141
-    }
+      'id': '810278',
+      'alias': 'Starpyre Lancer Zeis',
+      'position': 'bottom-right',
+      'bbOrder': 1,
+      'type': 'sbb',
+      'actualSparks': 141,
+      'possibleSparks': 141,
+    },
   ];
 
   const input = [
     {
-      "originalFrames": null,
-      "id": "11047",
-      "type": "sbb",
-      "bbOrder": 6,
-      "position": "top-left"
+      'originalFrames': null,
+      'id': '11047',
+      'type': 'sbb',
+      'bbOrder': 6,
+      'position': 'top-left',
     },
     {
-      "originalFrames": null,
-      "id": "11047",
-      "type": "sbb",
-      "bbOrder": 5,
-      "position": "bottom-left"
+      'originalFrames': null,
+      'id': '11047',
+      'type': 'sbb',
+      'bbOrder': 5,
+      'position': 'bottom-left',
     },
     {
-      "originalFrames": null,
-      "id": "810278",
-      "type": "sbb",
-      "bbOrder": 4,
-      "position": "middle-right"
+      'originalFrames': null,
+      'id': '810278',
+      'type': 'sbb',
+      'bbOrder': 4,
+      'position': 'middle-right',
     },
     {
-      "originalFrames": null,
-      "id": "810278",
-      "type": "sbb",
-      "bbOrder": 1,
-      "position": "bottom-right"
+      'originalFrames': null,
+      'id': '810278',
+      'type': 'sbb',
+      'bbOrder': 1,
+      'position': 'bottom-right',
     },
     {
-      "originalFrames": null,
-      "id": "60497",
-      "type": "sbb",
-      "bbOrder": 3,
-      "position": "middle-left"
+      'originalFrames': null,
+      'id': '60497',
+      'type': 'sbb',
+      'bbOrder': 3,
+      'position': 'middle-left',
     },
     {
-      "originalFrames": null,
-      "id": "10257",
-      "type": "sbb",
-      "bbOrder": 2,
-      "position": "top-right"
-    }
+      'originalFrames': null,
+      'id': '10257',
+      'type': 'sbb',
+      'bbOrder': 2,
+      'position': 'top-right',
+    },
   ];
 
 
-  const result = sparkSim.run(input, { sortResults: true });
+  const result = sparkSim.run(input, { sortResults: true, });
 
   expect(result.length).toBe(1);
 
