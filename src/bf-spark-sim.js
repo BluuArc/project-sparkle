@@ -1,3 +1,4 @@
+const EventEmitter = require('./event-emitter');
 const movespeedOffsets = {
   '1': {
     'top-left': 15,
@@ -66,6 +67,15 @@ class SparkSimulator {
     this.teleporterData = options.teleporterData || teleporterData;
     this.getUnitFn = options.getUnit;
     this.sbbFrameDelay = 2;
+    this.eventEmitter = new EventEmitter();
+  }
+
+  on (event, listener) {
+    this.eventEmitter.on(event, listener);
+  }
+
+  onProgress (listener) {
+    this.on('progress', listener);
   }
 
   getUnit (id) {
@@ -268,7 +278,7 @@ class SparkSimulator {
         }
       });
     } else {
-      console.log('All orders specfied, running sim on single order.');
+      // console.log('All orders specfied, running sim on single order.');
       const result = this.processSquad(withOrders);
       if (result.weightedPercentage >= threshold) {
         results.push(result);
@@ -326,7 +336,14 @@ class SparkSimulator {
 
         if (currentPercent % 5 === 0 && currentPercent !== lastLoggedPercent) {
           lastLoggedPercent = currentPercent;
-          console.log(`Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`);
+          const message = `Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`;
+          // console.log(message);
+          this.eventEmitter.emit('progress', {
+            percentComplete: currentPercent,
+            complete: numComplete,
+            total: permutations.length,
+            message,
+          });
         }
       });
     } else {
@@ -359,4 +376,6 @@ class SparkSimulator {
   }
 }
 
-module.exports = SparkSimulator;
+if (module && module.exports) {
+  module.exports = SparkSimulator;
+}

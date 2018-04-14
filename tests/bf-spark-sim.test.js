@@ -110,7 +110,6 @@ test('fully specified input - fire squad', () => {
     },
   ];
 
-
   const results = sparkSim.run(input, { sortResults: true, });
 
   expect(results.length).toBe(1);
@@ -123,4 +122,52 @@ test('fully specified input - fire squad', () => {
     const expectedUnit = expectedSquadResult[index];
     expect(unit).toEqual(expectedUnit);
   });
+});
+
+test('only units specified, with progress event handler - 100% spark squad', () => {
+  const input = [
+    {
+      'originalFrames': null,
+      'id': '860318',
+      'type': 'sbb',
+    },
+    {
+      'originalFrames': null,
+      'id': '860318',
+      'type': 'sbb',
+    },
+    {
+      'originalFrames': null,
+      'id': '60527',
+      'type': 'sbb',
+    },
+    {
+      'originalFrames': null,
+      'id': '60527',
+      'type': 'sbb',
+    },
+    {
+      'originalFrames': null,
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'originalFrames': null,
+      'id': '860328',
+      'type': 'sbb',
+    },
+  ];
+
+  sparkSim.onProgress(event => {
+    console.log(event.message);
+  });
+
+  const results = sparkSim.run(input, { sortResults: true, });
+
+  const actualResult = results[0];
+
+  console.log(actualResult);
+
+  expect(actualResult.weightedPercentage).toBeCloseTo(1.0);
+
 });
