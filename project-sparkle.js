@@ -11,6 +11,11 @@ function getUnit(id) {
   return unitData[id];
 }
 
+function getPositionIndex(position = '') {
+  const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
+  return allPositions.indexOf(position);
+}
+
 function getTeleporterOffset(unitData) {
   const filteredName = Object.keys(teleporterData)
     .filter(name => unitData.name.toLowerCase().indexOf(name) > -1)[0];
@@ -214,7 +219,7 @@ function findBestOrders(squad = [], threshold = 0.5) {
     .slice(0,10);
 }
 
-function findBestPositions(squad = [], threshold = 0.5) {
+function findBestPositions(squad = [], threshold = 0.5, sortResults = true) {
   const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
 
   // separate squad into 2 groups, 1 for units with specified positions, 1 for units without positions
@@ -275,9 +280,15 @@ function findBestPositions(squad = [], threshold = 0.5) {
   }
 
   // return top 10 results in descending order
-  return results
+  const finalResults = results
     .sort((a, b) => b.weightedPercentage - a.weightedPercentage)
     .slice(0, 10);
+  if (sortResults) {
+    finalResults.forEach(r => {
+      r.squad.sort((a, b) => getPositionIndex(a.position) - getPositionIndex(b.position));
+    });
+  }
+  return finalResults;
 }
 
 const exampleData = JSONC.parse(fs.readFileSync('input.json', 'utf8'));
