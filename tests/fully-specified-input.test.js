@@ -1,7 +1,7 @@
 const fs = require('fs');
 const SparkSim = require('../src/bf-spark-sim');
 
-const unitData = JSON.parse(fs.readFileSync('info-gl.json', 'utf8'));
+const unitData = JSON.parse(fs.readFileSync('./src/info-gl.json', 'utf8'));
 
 const sparkSim = new SparkSim({
   getUnit: id => unitData[id],
@@ -111,13 +111,15 @@ test('fully specified input - fire squad', () => {
   ];
 
 
-  const result = sparkSim.run(input, { sortResults: true, });
+  const results = sparkSim.run(input, { sortResults: true, });
 
-  expect(result.length).toBe(1);
+  expect(results.length).toBe(1);
 
-  expect(result.weightedPercentage).toBeCloseTo(0.9184);
+  const actualResult = results[0];
 
-  result.squad.forEach((unit, index) => {
+  expect(actualResult.weightedPercentage).toBeCloseTo(0.9184);
+
+  actualResult.squad.forEach((unit, index) => {
     const expectedUnit = expectedSquadResult[index];
     expect(unit).toEqual(expectedUnit);
   });
