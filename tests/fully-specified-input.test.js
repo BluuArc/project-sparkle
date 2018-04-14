@@ -1,7 +1,7 @@
 const fs = require('fs');
 const SparkSim = require('../src/bf-spark-sim');
 
-const unitData = JSON.parse(fs.readFileSync('./src/info-gl.json', 'utf8'));
+const unitData = JSON.parse(fs.readFileSync('./tests/info-gl.json', 'utf8'));
 
 const sparkSim = new SparkSim({
   getUnit: id => unitData[id],
