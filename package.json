@@ -4,7 +4,7 @@
   "description": "Node JS port of automatic sparkling simulator by /u/Hamzak62",
   "main": "main.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest tests/"
   },
   "keywords": [
     "bf"
@@ -19,5 +19,8 @@
     "socket.io": "^1.7.3",
     "underscore": "^1.8.3",
     "yargs": "^11.0.0"
+  },
+  "devDependencies": {
+    "jest": "^22.4.3"
   }
 }
