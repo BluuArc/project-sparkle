@@ -6,9 +6,12 @@
     simWorker: null,
     workerEvents: {},
     eventEmitter: null,
+    areas: {},
+    unitNames: {},
   };
 
   $(document).ready(() => init());
+
   function getUnitData() {
     return new Promise((fulfill, reject) => {
       $.get('tests/info-gl.json')
@@ -59,51 +62,103 @@
     });
   }
 
+  function initializePageElements() {
+    self.areas.squadSetup = $('#squad-setup-area');
+    const unitSetupTemplate = self.areas.squadSetup.find('#template-element');
+    const positions = {
+      'top-left': 'Top Left',
+      'top-right': 'Top Right',
+      'middle-left': 'Middle Left',
+      'middle-right': 'Middle Right',
+      'bottom-left': 'Bottom Left',
+      'bottom-right': 'Bottom Right',
+    };
+    const dropdownValues = [
+      {
+        name: '(Any)',
+        value: 'X',
+      },
+      {
+        name: '(Empty)',
+        value: 'E',
+      },
+    ].concat(Object.keys(self.unitNames).map(id => ({ value: id, name: self.unitNames[id], })));
+    Object.keys(positions).forEach(positionKey => {
+      const elem = unitSetupTemplate.clone();
+      elem.attr('id', positionKey);
+      elem.find('#position-text').text(positions[positionKey]);
+      self.areas.squadSetup.append(elem);
+    });
+    self.areas.squadSetup.find('.ui.dropdown[name="unit-select"]')
+      .dropdown({
+        values: dropdownValues,
+        fullTextSearch: 'exact',
+      });
+
+    self.areas.squadSetup.find('.ui.dropdown[name="bb-order"]')
+      .dropdown();
+    self.areas.squadSetup.find('.ui.dropdown[name="type"]')
+      .dropdown();
+
+  }
+
   async function init() {
     console.debug('Starting main');
     self.$output = $('p#output');
     self.eventEmitter = new EventEmitter();
     initSimWorker();
 
+    let unitData;
     self.eventEmitter.on('ready', () => {
-      console.debug('ready, sending test data');
-      const input = [
-        {
-          'originalFrames': null,
-          'id': '860318',
-          'type': 'sbb',
-        },
-        {
-          'originalFrames': null,
-          'id': '860318',
-          'type': 'sbb',
-        },
-        {
-          'originalFrames': null,
-          'id': '60527',
-          'type': 'sbb',
-        },
-        {
-          'originalFrames': null,
-          'id': '60527',
-          'type': 'sbb',
-        },
-        {
-          'originalFrames': null,
-          'id': '860328',
-          'type': 'sbb',
-        },
-        {
-          'originalFrames': null,
-          'id': '860328',
-          'type': 'sbb',
-        },
-      ];
-      runSim(input);
+      Object.keys(unitData)
+        .sort((a, b) => +a - +b)
+        .forEach(id => {
+          if (id !== '1') {
+            const unit = unitData[id];
+            const name = unit.name;
+            const rarity = (unit.rarity === 8) ? 'OE' : unit.rarity;
+            self.unitNames[id.toString()] = `${name} (${rarity})`;
+          }
+        });
+      initializePageElements();
+      // console.debug('ready, sending test data');
+      // const input = [
+      //   {
+      //     'originalFrames': null,
+      //     'id': '860318',
+      //     'type': 'sbb',
+      //   },
+      //   {
+      //     'originalFrames': null,
+      //     'id': '860318',
+      //     'type': 'sbb',
+      //   },
+      //   {
+      //     'originalFrames': null,
+      //     'id': '60527',
+      //     'type': 'sbb',
+      //   },
+      //   {
+      //     'originalFrames': null,
+      //     'id': '60527',
+      //     'type': 'sbb',
+      //   },
+      //   {
+      //     'originalFrames': null,
+      //     'id': '860328',
+      //     'type': 'sbb',
+      //   },
+      //   {
+      //     'originalFrames': null,
+      //     'id': '860328',
+      //     'type': 'sbb',
+      //   },
+      // ];
+      // runSim(input);
     });
 
     showOutput('Getting unit data');
-    const unitData = await getUnitData();
+    unitData = await getUnitData();
     self.simWorker.postMessage({
       command: 'init',
       unitData,

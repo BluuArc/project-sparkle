@@ -1,4 +1,4 @@
-<<!DOCTYPE html>
+<!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8" />
@@ -7,9 +7,151 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" /> -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.css">
+  <style>
+    #app #top-header {
+      margin-top: 1rem;
+    }
+
+    #template-element {
+      display: none;
+    }
+
+    #squad-setup-area .unit-editor {
+      border: 1px solid rgba(150,150,150,0.25);
+    }
+  </style>
 </head>
 <body>
-  <p id="output"></p>
+  <div id="app" class="ui container">
+    <div id="top-header" class="ui dividing center aligned header">
+      <span>Project Sparkle</span>
+      <div class="ui sub header">A Port of the <a href="https://docs.google.com/document/d/1nBpdd4RKky1hpXttPuMjWR_Z_YwHTBtVlVm1bUZPsmM/edit" target="_blank">Brave Frontier Automated Sparking Simulator</a></div>
+    </div>
+  </div>
+  <div class="ui segments" id="setup-area">
+    <div class="ui segment">
+      <div class="ui two column stackable grid" id="squad-setup-area">
+        <div class="column unit-editor" id="template-element">
+          <!-- Name | Position -->
+          <div class="ui grid">
+            <div class="ten wide column">
+              <select name="unit-select" class="ui fluid search selection dropdown">
+                <option value="">Unit</option>
+                <option value="X">(Any)</option>
+                <option value="E">(Empty)</option>
+              </select>
+            </div>
+  
+            <div class="six wide right aligned column">
+              <div class="ui header medium">
+                <span id="position-text">Top Left</span>
+                <div class="ui sub header">
+                  <div class="ui checkbox">
+                    <input type="checkbox" name="lock-position">
+                    <label>Lock Position</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- BB Order | BB Type -->
+          <div class="ui two column stackable grid">
+            <div class="column">
+              <div class="ui fluid labeled input">
+                <div class="ui label">BB Order</div>
+                <select name="bb-order" class="ui fluid dropdown">
+                  <option value="">BB Order</option>
+                  <option value="any">(Any)</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                </select>
+              </div>
+            </div>
+  
+            <div class="column">
+              <div class="ui fluid labeled input">
+                <div class="ui label">Attack Type</div>
+                <select name="type" class="ui fluid dropdown">
+                  <option value="">Attack Type</option>
+                  <option value="bb">BB</option>
+                  <option value="sbb">SBB</option>
+                  <option value="ubb">UBB</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui segment">
+      <button id="run-sim-btn" class="ui button fluid primary">Run Simulator</button>
+    </div>
+  </div>
+
+  <div class="ui segment" id="progress-area">
+    <div class="ui top attached progress">
+      <div class="bar"></div>
+    </div>
+    <p id="progress-text">Progress goes here</p>
+    <div class="ui bottom attached progress">
+      <div class="bar"></div>
+    </div>
+  </div>
+
+  <div class="ui segments" id="sim-result-area">
+    <!-- turn to collapsible? -->
+    <div class="ui segment">
+      <div class="ui two column grid">
+        <div class="left eligned column">
+          <div class="ui small horizontal statistic">
+            <div class="value">##.##%</div>
+            <div class="label">(Result 1)</div>
+          </div>
+        </div>
+        <div class="right aligned column">
+          <button class="ui grey button">Copy Squad</button>
+        </div>
+      </div>
+      <div class="ui two column stackable internally celled grid">
+        <div class="column" id="top-left">
+          <!-- Name | Position -->
+          <div class="ui grid">
+            <div class="ten wide left aligned column">
+              <div class="ui small header">Unit Name</div>
+            </div>
+      
+            <div class="six wide right aligned column">
+              <div class="ui header medium">
+                <span>Top Left</span>
+              </div>
+            </div>
+          </div>
+      
+          <!-- BB Order/Type | BB Type -->
+          <div class="ui grid">
+            <div class="six wide column">
+              <div class="ui large label">
+                 1
+                 <div class="detail">SBB</div>
+              </div>
+            </div>
+
+            <div class="ten wide right aligned column">
+              <div class="ui small horizontal statistic">
+                <div class="value">## / ##</div>
+                <div class="label">Sparks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.js"></script>
   <script src="dist/bf-spark-sim.js"></script>
