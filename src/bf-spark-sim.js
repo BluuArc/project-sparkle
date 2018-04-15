@@ -422,3 +422,18 @@ class SparkSimulator {
 if (module && module.exports) {
   module.exports = SparkSimulator;
 }
+
+try {
+  window.SparkSimulator = SparkSimulator;
+// eslint-disable-next-line no-empty
+} catch (err) {}
+
+try {
+  self.SparkSimulator = SparkSimulator;
+// eslint-disable-next-line no-empty
+} catch (err) {}
+
+try {
+  global.SparkSimulator = SparkSimulator;
+  // eslint-disable-next-line no-empty
+} catch (err) { }

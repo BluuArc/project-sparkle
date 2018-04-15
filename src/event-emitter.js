@@ -70,6 +70,23 @@ EventEmitter.prototype.once = function (event, listener) {
   });
 };
 
-if (module && module.exports) {
+try {
   module.exports = EventEmitter;
-}
+// eslint-disable-next-line no-empty
+} catch (err) {}
+
+
+try {
+  window.EventEmitter = EventEmitter;
+  // eslint-disable-next-line no-empty
+} catch (err) { }
+
+try {
+  self.EventEmitter = EventEmitter;
+  // eslint-disable-next-line no-empty
+} catch (err) { }
+
+try {
+  global.EventEmitter = EventEmitter;
+  // eslint-disable-next-line no-empty
+} catch (err) { }
