@@ -122,10 +122,22 @@ var tempGlobals;
     showSimResults(results);
   }
 
+  // function getFormattedResult(result) {
+    
+  // }
+
   function showSimResults(results = []) {
     const simResultArea = self.areas.simResult;
     simResultArea.find('.result-segment[id!="template-element"]').remove();
     const templateElement = simResultArea.find('.result-segment#template-element');
+
+    if (results.length === 0) {
+      const elem = templateElement.clone();
+      elem.attr('id', 'sim-result');
+      elem.find('*').remove();
+      elem.html('<div class="ui header medium">No suitable results found.</div>');
+      simResultArea.append(elem);
+    }
 
     results.forEach((result, index) => {
       const elem = templateElement.clone();
@@ -223,7 +235,7 @@ var tempGlobals;
           } else {
             bbTypeDropdown.dropdown('change values', possibleTypes)
               .dropdown('set exactly', ['', ])
-              .dropdown('set text', 'No attacks found')
+              .dropdown('set text', 'N/A')
               .addClass('disabled');
           }
         },
@@ -234,7 +246,7 @@ var tempGlobals;
           onChange (value) { bbTypeDropdown.value = value; }
         }).dropdown('change values', [])
         .dropdown('set exactly', ['',])
-        .dropdown('set text', 'No attacks found')
+        .dropdown('set text', 'N/A')
         .addClass('disabled');
 
       self.formData[positionKey] = {
