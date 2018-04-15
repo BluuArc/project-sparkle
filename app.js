@@ -12,7 +12,20 @@ var tempGlobals;
     unitTypes: {},
     formData: {},
     unitData: null,
+    positions: {
+      'top-left': 'Top Left',
+      'top-right': 'Top Right',
+      'middle-left': 'Middle Left',
+      'middle-right': 'Middle Right',
+      'bottom-left': 'Bottom Left',
+      'bottom-right': 'Bottom Right',
+    },
   };
+
+  function getPositionIndex(position = '') {
+    const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
+    return allPositions.indexOf(position);
+  }
 
   // tempGlobals = self;
 
@@ -20,7 +33,8 @@ var tempGlobals;
 
   function getUnitData() {
     self.simWorker.postMessage({
-      url: `${location.href}tests/info-gl.json`,
+      // url: `${location.href}tests/info-gl.json`,
+      url: 'https://raw.githubusercontent.com/cheahjs/bravefrontier_data/master/info.json',
       command: 'getjson',
     });
     // return new Promise((fulfill, reject) => {
@@ -105,6 +119,39 @@ var tempGlobals;
     self.areas.simSettings.find('#run-sim-btn').removeClass('disabled');
     self.areas.squadSetup.find('.ui.dimmer').removeClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
+    showSimResults(results);
+  }
+
+  function showSimResults(results = []) {
+    const simResultArea = self.areas.simResult;
+    simResultArea.find('.result-segment[id!="template-element"]').remove();
+    const templateElement = simResultArea.find('.result-segment#template-element');
+
+    results.forEach((result, index) => {
+      const elem = templateElement.clone();
+      elem.attr('id', `sim-result-${index + 1}`);
+      elem.find('#overall-sparks .value').text(`${(result.weightedPercentage * 100).toFixed(2)}%`);
+      elem.find('#overall-sparks .label').text(`(Result ${index + 1})`);
+
+      const squadArea = elem.find('#squad-area');
+      const templateElementUnit = squadArea.find('#template-element');
+      result.squad
+        .sort((a, b) => getPositionIndex(a.position) - getPositionIndex(b.position))
+        .forEach(unit => {
+          const unitElem = templateElementUnit.clone();
+          unitElem.attr('id', unit.position);
+          unitElem.find('#unit-name').text(unit.alias || unit.id);
+          unitElem.find('#position-text').text(self.positions[unit.position]);
+          unitElem.find('#order-type-label #bb-order').text(unit.bbOrder);
+          unitElem.find('#order-type-label .detail').text((unit.type || 'N/A').toUpperCase());
+          unitElem.find('#spark-statistic .value').text(`${unit.actualSparks} / ${unit.possibleSparks}`);
+          squadArea.append(unitElem);
+        });
+      simResultArea.append(elem);
+    });
+
+
+    simResultArea.show();
   }
 
   function getSimInputFromPosition(position = '') {
@@ -121,30 +168,27 @@ var tempGlobals;
   }
 
   function runSim() {
+    self.areas.simResult.hide();
     const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
     const input = positions.map(getSimInputFromPosition);
-    console.debug('would run sim now', input);
+    notify('Running Spark Simulator.', 0);
+    console.debug('running sim now', input);
     self.areas.simSettings.find('#run-sim-btn').addClass('disabled');
     self.areas.squadSetup.find('.ui.dimmer').addClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
 
-    self.simWorker.postMessage({
-      command: 'runsim',
-      input,
-    });
+    // give time for progress bars to update
+    setTimeout(() => {
+      self.simWorker.postMessage({
+        command: 'runsim',
+        input,
+      });
+    }, 500);
   }
 
   function initializePageElements() {
     self.areas.unitEditorArea = self.areas.squadSetup.find('#unit-editor-area');
     const unitSetupTemplate = self.areas.unitEditorArea.find('#template-element');
-    const positions = {
-      'top-left': 'Top Left',
-      'top-right': 'Top Right',
-      'middle-left': 'Middle Left',
-      'middle-right': 'Middle Right',
-      'bottom-left': 'Bottom Left',
-      'bottom-right': 'Bottom Right',
-    };
     const dropdownValues = [
       {
         name: '(Any)',
@@ -155,10 +199,10 @@ var tempGlobals;
         value: 'E',
       },
     ].concat(Object.keys(self.unitNames).map(id => ({ value: id, name: self.unitNames[id], })));
-    Object.keys(positions).forEach(positionKey => {
+    Object.keys(self.positions).forEach(positionKey => {
       const elem = unitSetupTemplate.clone();
       elem.attr('id', positionKey);
-      elem.find('#position-text').text(positions[positionKey]);
+      elem.find('#position-text').text(self.positions[positionKey]);
       const orderDropdown = elem.find('.ui.dropdown[name="bb-order"]');
       orderDropdown.dropdown({
         onChange(value) { orderDropdown.value = value; },
@@ -219,7 +263,9 @@ var tempGlobals;
     self.areas.squadSetup = $('#setup-area #squad-setup-area');
     self.areas.simSettings = $('#setup-area #sim-settings-area');
     self.areas.progress = $('#progress-area');
+    self.areas.simResult = $('#sim-result-area');
 
+    self.areas.simResult.hide();
     self.areas.simSettings.hide();
     self.areas.squadSetup.find('.ui.dimmer').addClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Loading unit data');

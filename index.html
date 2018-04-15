@@ -16,11 +16,15 @@
       display: none;
     }
 
-    #squad-setup-area .unit-editor {
+    .unit-editor {
       border: 1px solid rgba(150,150,150,0.25);
     }
 
-    #setup-area #squad-setup-area{
+    .result-segment {
+      border: 1px solid gray !important;
+    }
+
+    #setup-area #squad-setup-area {
       min-height: 10rem;
     }
   </style>
@@ -108,7 +112,7 @@
       <div class="bar"></div>
     </div>
     <div class="ui floating message">
-      Progress Goes Here
+      Loading data...
     </div>
     <div class="ui bottom attached progress">
       <div class="bar"></div>
@@ -117,10 +121,10 @@
 
   <div class="ui segments" id="sim-result-area">
     <!-- turn to collapsible? -->
-    <div class="ui segment">
+    <div class="ui segment result-segment" id="template-element">
       <div class="ui two column grid">
-        <div class="left eligned column">
-          <div class="ui small horizontal statistic">
+        <div class="left aligned column">
+          <div class="ui small horizontal statistic" id="overall-sparks">
             <div class="value">##.##%</div>
             <div class="label">(Result 1)</div>
           </div>
@@ -129,16 +133,16 @@
           <button class="ui grey button">Copy Squad</button>
         </div>
       </div>
-      <div class="ui two column stackable internally celled grid">
-        <div class="column" id="top-left">
+      <div class="ui two column stackable internally celled grid" id="squad-area">
+        <div class="column unit-editor" id="template-element">
           <!-- Name | Position -->
           <div class="ui grid">
             <div class="ten wide left aligned column">
-              <div class="ui small header">Unit Name</div>
+              <div class="ui medium header" id="unit-name">Unit Name</div>
             </div>
       
             <div class="six wide right aligned column">
-              <div class="ui header medium">
+              <div class="ui header small" id="position-text">
                 <span>Top Left</span>
               </div>
             </div>
@@ -147,14 +151,14 @@
           <!-- BB Order/Type | BB Type -->
           <div class="ui grid">
             <div class="six wide column">
-              <div class="ui large label">
-                 1
+              <div class="ui large label" id="order-type-label">
+                 <span id="bb-order">1</span>
                  <div class="detail">SBB</div>
               </div>
             </div>
 
             <div class="ten wide right aligned column">
-              <div class="ui small horizontal statistic">
+              <div class="ui small horizontal statistic" id="spark-statistic">
                 <div class="value">## / ##</div>
                 <div class="label">Sparks</div>
               </div>
