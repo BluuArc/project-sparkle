@@ -122,9 +122,27 @@ var tempGlobals;
     showSimResults(results);
   }
 
-  // function getFormattedResult(result) {
-    
-  // }
+  // similar format to output from Python version
+  function getFormattedResult(result) {
+    const percent = (result.weightedPercentage * 100).toFixed(2);
+    let maxNameLength = 0;
+    const generateName = (unit) => `${unit.alias || unit.id}: ${unit.bbOrder}-${(unit.type || 'N/A').toUpperCase()} - (${unit.actualSparks}/${unit.possibleSparks})`;
+    result.squad.forEach(unit => {
+      if (unit.position.includes('left')) {
+        maxNameLength = Math.max(maxNameLength, generateName(unit).length);
+      }
+    });
+    const names = result.squad.sort((a, b) => getPositionIndex(a.position) - getPositionIndex(b.position))
+      .map(unit => {
+        const name = generateName(unit);
+        if (unit.position.includes('left')) {
+          return name.padEnd(maxNameLength, ' ') + ' | ';
+        } else {
+          return `${name}\n`;
+        }
+      });
+    return [`${percent}%\n`,].concat(names).join('');
+  }
 
   function showSimResults(results = []) {
     const simResultArea = self.areas.simResult;
@@ -144,6 +162,12 @@ var tempGlobals;
       elem.attr('id', `sim-result-${index + 1}`);
       elem.find('#overall-sparks .value').text(`${(result.weightedPercentage * 100).toFixed(2)}%`);
       elem.find('#overall-sparks .label').text(`(Result ${index + 1})`);
+      const copyButton = elem.find('#copy-squad-btn')
+        .attr('data-clipboard-text', getFormattedResult(result));
+      new ClipboardJS(copyButton.get(0));
+      copyButton.on('click', () => {
+        copyButton.text('Copied!');
+      });
 
       const squadArea = elem.find('#squad-area');
       const templateElementUnit = squadArea.find('#template-element');
@@ -181,7 +205,7 @@ var tempGlobals;
 
   function runSim() {
     self.areas.simResult.hide();
-    const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
+    const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
     const input = positions.map(getSimInputFromPosition);
     notify('Running Spark Simulator.', 0);
     console.debug('running sim now', input);
@@ -243,7 +267,7 @@ var tempGlobals;
         .dropdown('save defaults');
       bbTypeDropdown
         .dropdown({
-          onChange (value) { bbTypeDropdown.value = value; }
+          onChange (value) { bbTypeDropdown.value = value; },
         }).dropdown('change values', [])
         .dropdown('set exactly', ['',])
         .dropdown('set text', 'N/A')
@@ -290,7 +314,7 @@ var tempGlobals;
         .sort((a, b) => +a - +b)
         .forEach(id => {
           if (id !== '1') {
-            const possibleTypes = ['bb', 'sbb', 'ubb'];
+            const possibleTypes = ['bb', 'sbb', 'ubb',];
             const unit = unitData[id];
             const name = unit.name;
             const rarity = (unit.rarity === 8) ? 'OE' : unit.rarity;
