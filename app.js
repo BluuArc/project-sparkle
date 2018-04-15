@@ -70,45 +70,33 @@
       const input = [
         {
           'originalFrames': null,
-          'id': '11047',
+          'id': '860318',
           'type': 'sbb',
-          'bbOrder': 6,
-          'position': 'top-left',
         },
         {
           'originalFrames': null,
-          'id': '11047',
+          'id': '860318',
           'type': 'sbb',
-          'bbOrder': 5,
-          'position': 'bottom-left',
         },
         {
           'originalFrames': null,
-          'id': '810278',
+          'id': '60527',
           'type': 'sbb',
-          'bbOrder': 4,
-          'position': 'middle-right',
         },
         {
           'originalFrames': null,
-          'id': '810278',
+          'id': '60527',
           'type': 'sbb',
-          'bbOrder': 1,
-          'position': 'bottom-right',
         },
         {
           'originalFrames': null,
-          'id': '60497',
+          'id': '860328',
           'type': 'sbb',
-          'bbOrder': 3,
-          'position': 'middle-left',
         },
         {
           'originalFrames': null,
-          'id': '10257',
+          'id': '860328',
           'type': 'sbb',
-          'bbOrder': 2,
-          'position': 'top-right',
         },
       ];
       runSim(input);

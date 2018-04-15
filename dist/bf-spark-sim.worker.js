@@ -16,6 +16,9 @@ function initSparkSim(unitData) {
   sparkSimInstance.unitData = unitData;
   sparkSimInstance.sparkSim = new SparkSimulator({
     getUnit: id => sparkSimInstance.unitData[id]
+  });
+  sparkSimInstance.sparkSim.onProgress(progress => {
+    postMessage({ progress });
   })
 }
 
