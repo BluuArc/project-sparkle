@@ -353,6 +353,7 @@
 
   async function init() {
     console.debug('Starting main');
+    loadTracker();
     self.$output = $('p#output');
     self.eventEmitter = new EventEmitter();
     self.areas.squadSetup = $('#setup-area #squad-setup-area');
@@ -400,16 +401,31 @@
       .then(() => {
         if (!self.unitData) {
           getUnitData();
-        } else {
-          self.eventEmitter.emit('ready');
         }
       });
-    
-    // self.sparkSim = new SparkSimulator({
-    //   getUnit: id => unitData[id]
-    // });
+  }
 
-    // const results = await self.sparkSim.run(input, { sortResults: true, });
-    // showOutput(JSON.stringify(results, null, 2));
+  function loadTracker() {
+    //globals for statcounter tracker
+    window.sc_project = 11034084;
+    window.sc_invisible = 1;
+    window.sc_security = '3e7dba9f';
+    window.scJsHost = (('https:' == document.location.protocol) ? 'https://secure.' : 'http://www.');
+
+    //pure javascript version of appending a script
+    //based off of https://howchoo.com/g/mmu0nguznjg/learn-the-slow-and-fast-way-to-append-elements-to-the-dom
+    function appendScript(url) {
+      return new Promise(function (fulfill, reject) {
+        let e = document.createElement('script');
+        e.src = url;
+        e.onload = () => {
+          fulfill();
+        };
+        e.onerror = reject;
+        document.body.appendChild(e);
+      });
+    }
+
+    return appendScript(`${window.scJsHost}statcounter.com/counter/counter.js`);
   }
 })();
