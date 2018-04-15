@@ -7,7 +7,7 @@ const sparkSim = new SparkSim({
   getUnit: id => unitData[id],
 });
 
-test('fully specified input - fire squad', () => {
+test('fully specified input - fire squad', async () => {
   const expectedSquadResult = [
     {
       'id': '11047',
@@ -110,7 +110,7 @@ test('fully specified input - fire squad', () => {
     },
   ];
 
-  const results = sparkSim.run(input, { sortResults: true, });
+  const results = await sparkSim.run(input, { sortResults: true, });
 
   expect(results.length).toBe(1);
 
@@ -124,7 +124,7 @@ test('fully specified input - fire squad', () => {
   });
 });
 
-test('only units specified, with progress event handler - 100% spark squad', () => {
+test('only units specified, with progress event handler - 100% spark squad', async () => {
   const input = [
     {
       'originalFrames': null,
@@ -162,13 +162,13 @@ test('only units specified, with progress event handler - 100% spark squad', () 
     console.log(event.message);
   });
 
-  const results = sparkSim.run(input, { sortResults: true, });
+  const results = await sparkSim.run(input, { sortResults: true, });
   const actualResult = results[0];
   console.log(actualResult);
   expect(actualResult.weightedPercentage).toBeCloseTo(1.0);
 });
 
-test('squad with 2 specified, 4 "(any)" units', () => {
+test('squad with 2 specified, 4 "(any)" units', async () => {
   const input = [
     {
       'originalFrames': null,
@@ -194,11 +194,7 @@ test('squad with 2 specified, 4 "(any)" units', () => {
     },
   ];
 
-  sparkSim.onProgress(event => {
-    console.log(event.message);
-  });
-
-  const results = sparkSim.run(input, { sortResults: true, });
+  const results = await sparkSim.run(input, { sortResults: true, });
   const actualResult = results[0];
   console.log(actualResult);
   // should result in perfectly sparking both units

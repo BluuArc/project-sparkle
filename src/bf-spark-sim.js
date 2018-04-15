@@ -78,8 +78,8 @@ class SparkSimulator {
     this.on('progress', listener);
   }
 
-  getUnit (id) {
-    return this.getUnitFn(id);
+  async getUnit (id) {
+    return await Promise.resolve(this.getUnitFn(id));
   }
 
   static getPositionIndex(position = '') {
@@ -95,13 +95,12 @@ class SparkSimulator {
   }
 
   // returns an array of attacks, where each attack is an object of st/aoe classification keyed by frame times
-  getOriginalFramesForUnit(id, type) {
+  getOriginalFramesForUnit(unit, type) {
     const attackingProcs = ['1', '13', '14', '27', '28', '29', '47', '61', '64', '75', '11000',].concat(['46', '48', '97',]);
-    const unit = this.getUnit(id);
     const allFrames = unit[type]['damage frames'];
     const moveType = +unit.movement.skill['move type'];
     const offset = (moveType === 3 ? +unit.movement.skill['move speed'] : 0) +
-      (+moveType === 2 ? this.getTeleporterOffset(unit) : 0); // TODO: add read from teleporter data here
+      (+moveType === 2 ? this.getTeleporterOffset(unit) : 0);
     let isAOE = true; // TODO: add support for skills with multiple AOE attacks
     return allFrames.filter(procFrame => attackingProcs.indexOf(procFrame['proc id'].toString()) > -1)
       .map(procFrame => {
@@ -116,26 +115,31 @@ class SparkSimulator {
       });
   }
 
+  async getUnitData(squadEntry = {}) {   
+    const unit = await this.getUnit(squadEntry.id);
+
+    return {
+      name: unit.name,
+      moveType: +unit.movement.skill['move type'],
+      speedType: unit.movement.skill['move speed type'].toString(),
+      originalFrames: this.getOriginalFramesForUnit(unit, squadEntry.type || 'sbb'),
+    };
+  }
+
   // given a squad entry, return an object keyed by frame times where each value is a count of number of units attacking at that frame time
   getBattleFrames(squadEntry = {}) {
     if (squadEntry.id === 'X') {
       return {};
     }
     const position = squadEntry.position;
-    if (!squadEntry.originalFrames) {
-      squadEntry.originalFrames = this.getOriginalFramesForUnit(squadEntry.id, squadEntry.type || 'sbb');
-    }
-
-    const unit = this.getUnit(squadEntry.id);
-    const moveType = +unit.movement.skill['move type'];
-    const speedType = unit.movement.skill['move speed type'].toString();
+    const { name, moveType, speedType, originalFrames, } = squadEntry.unitData;
     const frameDelay = ((+squadEntry.bbOrder - 1) * this.sbbFrameDelay) +
       (moveType === 1 ? movespeedOffsets[speedType][position] : 0); // TODO: add support for SBB frame delay of 1
 
-    squadEntry.alias = squadEntry.alias || unit.name;
+    squadEntry.alias = squadEntry.alias || name;
 
     const offsetFrames = {};
-    squadEntry.originalFrames.forEach(attack => {
+    originalFrames.forEach(attack => {
       Object.keys(attack).forEach(frame => {
         const actualFrame = (+frame + frameDelay);
         if (!offsetFrames[actualFrame]) {
@@ -149,7 +153,6 @@ class SparkSimulator {
     });
     return offsetFrames;
   }
-
 
   // should be in format specified in input-example.json
   processSquad(units = [], numEnemies = 6) {
@@ -204,7 +207,7 @@ class SparkSimulator {
       actualSparksSquad += actualSparks;
       const aliasMap = {
         X: '(Any)',
-        E: '(Empty)'
+        E: '(Empty)',
       };
       return {
         id: unit.id,
@@ -370,9 +373,40 @@ class SparkSimulator {
       .sort((a, b) => b.weightedPercentage - a.weightedPercentage)
       .slice(0, 10);
   }
+  
+  // check validity of squad and get unit data
+  async preProcessSquad(squad = []) {
+    const anyUnits = squad.filter(u => u.id === 'X');
+    const emptyUnits = squad.filter(u => u.id === 'E');
+    if (squad.length !== 6) {
+      throw Error('Squad length must be 6');
+    } else if (anyUnits + emptyUnits > 4) {
+      throw Error('Must have at least 2 actual units in squad');
+    } else if (emptyUnits.filter(u => !u.position).length > 1) {
+      throw Error('Must have position satisfied for every empty unit');
+    }
 
-  run (squad = [], options = {}) {
+    const loadPromises = [];
+    squad.forEach(entry => {
+      if (!(entry.id === 'X' || entry.id === 'E')) {
+        const loadPromise = this.getUnitData(entry)
+          .then(data => {
+            entry.unitData = data;
+          });
+        loadPromises.push(loadPromise);
+      }
+    });
+
+    try {
+      await Promise.all(loadPromises);
+    } catch (err) {
+      throw err;
+    }
+  }
+
+  async run (squad = [], options = {}) {
     const { threshold, sortResults, } = options;
+    await this.preProcessSquad(squad);
     const results = this.findBestPositions(squad, threshold);
     if (sortResults) {
       results.forEach(r => {
