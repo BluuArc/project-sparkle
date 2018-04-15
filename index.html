@@ -99,6 +99,23 @@
         </div>
       </div>
     </div>
+    <div class="ui segment" id="notes-area">
+      <div class="ui segments">
+        <div class="ui segment">
+          <div class="ui two column grid stackable">
+            <div class="column">
+              <p><b>Unit data last cached:</b> <span id="cache-time">Never</span></p>
+            </div>
+            <div class="column">
+              <button id="clear-cache-btn" class="ui button fluid secondary">Redownload Units (requires page reload)</button>
+            </div>
+          </div>
+        </div>
+        <div class="ui segment">
+          <b>Note:</b> Squads with teleporting units are not guaranteed to be 100% accurate (as their offsets need to be put in manually)
+        </div>
+      </div>
+    </div>
     <div class="ui segment" id="sim-settings-area">
       <div class="ui dimmer">
         <div class="ui text loader">Loading</div>
@@ -129,32 +146,32 @@
         <div class="ui breadcrum">
           <div class="ui red label">
             <span>1</span>
-            <div class="detail">Attack Type</div>
+            <div class="detail">BB/SBB/UBB</div>
           </div>
           <i class="right chevron icon divider"></i>
           <div class="ui blue label">
             <span>2</span>
-            <div class="detail">Attack Type</div>
+            <div class="detail">BB/SBB/UBB</div>
           </div>
           <i class="right chevron icon divider"></i>
           <div class="ui green label">
             <span>3</span>
-            <div class="detail">Attack Type</div>
+            <div class="detail">BB/SBB/UBB</div>
           </div>
           <i class="right chevron icon divider"></i>
           <div class="ui yellow label">
             <span>4</span>
-            <div class="detail">Attack Type</div>
+            <div class="detail">BB/SBB/UBB</div>
           </div>
           <i class="right chevron icon divider"></i>
           <div class="ui grey label">
             <span>5</span>
-            <div class="detail">Attack Type</div>
+            <div class="detail">BB/SBB/UBB</div>
           </div>
           <i class="right chevron icon divider"></i>
           <div class="ui violet label">
             <span>6</span>
-            <div class="detail">Attack Type</div>
+            <div class="detail">BB/SBB/UBB</div>
           </div>
         </div>
       </p>
@@ -207,9 +224,11 @@
       </div>
     </div>
   </div>
+
   <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+  <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
   <script src="dist/bf-spark-sim.js"></script>
   <script src="src/event-emitter.js"></script>
   <script src="app.js"></script>

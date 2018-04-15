@@ -1,5 +1,4 @@
-/* global $ EventEmitter */
-var tempGlobals;
+/* global $ EventEmitter ClipboardJS Dexie */
 (async () => {
   const self = {
     lastActiveFn: () => { },
@@ -20,14 +19,13 @@ var tempGlobals;
       'bottom-left': 'Bottom Left',
       'bottom-right': 'Bottom Right',
     },
+    db: null,
   };
 
   function getPositionIndex(position = '') {
     const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
     return allPositions.indexOf(position);
   }
-
-  // tempGlobals = self;
 
   $(document).ready(() => init());
 
@@ -45,6 +43,47 @@ var tempGlobals;
 
   function showOutput(msg) {
     self.$output.html(msg);
+  }
+
+  function initDb() {
+    const db = new Dexie('project-sparkle-db');
+    db.version(1).stores({
+      units: '&server,data,update',
+    });
+
+    self.db = db;
+  }
+
+  function clearDbUnits() {
+    return self.db.units
+      .where('server').equals('gl')
+      .delete().then(() => {
+        console.debug('deleted dexie unit data');
+        location.reload(true);
+      });
+  }
+
+  function getDbUnits() {
+    if (!self.db) {
+      initDb();
+    }
+
+    return self.db.units
+      .where('server').equals('gl')
+      .toArray().then(result => {
+        if (result[0]) {
+          console.debug('using db unit data', result[0]);
+          self.unitData = result[0].data;
+          $('#notes-area #cache-time').text(new Date(result[0].update).toLocaleString());
+          self.simWorker.postMessage({
+            command: 'init',
+            unitData: self.unitData,
+          });
+        } else {
+          console.debug('no unit data found in db');
+          return;
+        }
+      });
   }
 
   function initSimWorker() {
@@ -65,6 +104,12 @@ var tempGlobals;
         handleSimResults(e.data.results);
       } else if (e.data.json) {
         self.unitData = e.data.json;
+        self.db.units
+          .put({ server: 'gl', data: self.unitData, update: new Date(), })
+          .then(() => {
+            console.debug('cached unit data');
+            $('#notes-area #cache-time').text(new Date().toLocaleString());
+          });
         self.simWorker.postMessage({
           command: 'init',
           unitData: e.data.json,
@@ -157,13 +202,14 @@ var tempGlobals;
       simResultArea.append(elem);
     }
 
+    // elemental ordering
     const bbOrderMapping = {
       1: 'red',
-      2: 'yellow',
+      2: 'blue',
       3: 'green',
-      4: 'blue',
-      5: 'violet',
-      6: 'grey',
+      4: 'yellow',
+      5: 'grey',
+      6: 'violet',
     };
 
     results.forEach((result, index) => {
@@ -198,6 +244,7 @@ var tempGlobals;
 
 
     simResultArea.show();
+    self.areas.progress.get(0).scrollIntoView(true);
   }
 
   function getSimInputFromPosition(position = '') {
@@ -298,6 +345,7 @@ var tempGlobals;
     $('#setup-area #run-sim-btn').on('click', runSim);
 
     self.areas.simSettings.show();
+    self.areas.notes.show();
     self.areas.squadSetup.find('.ui.dimmer').removeClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
     notify('Spark Sim Setup Area is ready.');
@@ -311,9 +359,13 @@ var tempGlobals;
     self.areas.simSettings = $('#setup-area #sim-settings-area');
     self.areas.progress = $('#progress-area');
     self.areas.simResult = $('#sim-result-area');
+    self.areas.notes = $('#notes-area');
+
+    self.areas.notes.find('#clear-cache-btn').on('click', clearDbUnits);
 
     self.areas.simResult.hide();
     self.areas.simSettings.hide();
+    self.areas.notes.hide();
     self.areas.squadSetup.find('.ui.dimmer').addClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Loading unit data');
     initSimWorker();
@@ -340,44 +392,18 @@ var tempGlobals;
           }
         });
       initializePageElements();
-      // console.debug('ready, sending test data');
-      // const input = [
-      //   {
-      //     'originalFrames': null,
-      //     'id': '860318',
-      //     'type': 'sbb',
-      //   },
-      //   {
-      //     'originalFrames': null,
-      //     'id': '860318',
-      //     'type': 'sbb',
-      //   },
-      //   {
-      //     'originalFrames': null,
-      //     'id': '60527',
-      //     'type': 'sbb',
-      //   },
-      //   {
-      //     'originalFrames': null,
-      //     'id': '60527',
-      //     'type': 'sbb',
-      //   },
-      //   {
-      //     'originalFrames': null,
-      //     'id': '860328',
-      //     'type': 'sbb',
-      //   },
-      //   {
-      //     'originalFrames': null,
-      //     'id': '860328',
-      //     'type': 'sbb',
-      //   },
-      // ];
-      // runSim(input);
     });
 
     showOutput('Getting unit data');
-    getUnitData();
+    // getUnitData();
+    await getDbUnits()
+      .then(() => {
+        if (!self.unitData) {
+          getUnitData();
+        } else {
+          self.eventEmitter.emit('ready');
+        }
+      });
     
     // self.sparkSim = new SparkSimulator({
     //   getUnit: id => unitData[id]
