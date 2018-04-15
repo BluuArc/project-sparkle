@@ -128,7 +128,7 @@ class SparkSimulator {
 
   // given a squad entry, return an object keyed by frame times where each value is a count of number of units attacking at that frame time
   getBattleFrames(squadEntry = {}) {
-    if (squadEntry.id === 'X') {
+    if (squadEntry.id === 'X' || squadEntry.id === 'E') {
       return {};
     }
     const position = squadEntry.position;

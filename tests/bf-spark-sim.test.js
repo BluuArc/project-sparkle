@@ -236,3 +236,71 @@ test('Error: < 2 actual units - 5 any', async () => {
     expect(err.message).toMatch('Must have at least 2 actual units in squad');
   }
 });
+
+test('Empty units, 2 specfied units', async () => {
+  const input = [
+    {
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'id': 'E',
+      'position': 'top-left',
+    },
+    {
+      'id': 'E',
+      'position': 'middle-left',
+    },
+    {
+      'id': 'E',
+      'position': 'bottom-left',
+    },
+    {
+      'id': 'E',
+      'position': 'middle-right',
+    },
+  ];
+
+  const results = await sparkSim.run(input, { sortResults: true, });
+  const actualResult = results[0];
+  console.log(actualResult);
+  // should result in perfectly sparking both units
+  expect(actualResult.weightedPercentage).toBeCloseTo(1.0);
+});
+
+test('Empty and Any units, 2 specified', async () => {
+  const input = [
+    {
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'E',
+      'position': 'middle-right',
+    },
+  ];
+
+  const results = await sparkSim.run(input, { sortResults: true, });
+  // fs.writeFileSync('empty-any-mixed-results.json', JSON.stringify(results, null, 2));
+  // should result in perfectly sparking both units
+  results.forEach(result => {
+    expect(result.weightedPercentage).toBeCloseTo(1.0);
+  });
+});
