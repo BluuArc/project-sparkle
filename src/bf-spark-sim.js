@@ -256,7 +256,7 @@ class SparkSimulator {
   }
 
   // threshold is minimum value of squad sparks to keep squad
-  findBestOrders(squad = [], threshold = 0.5) {
+  findBestOrders(squad = [], threshold = 0.5, maxResults = 10) {
     const allOrders = [1, 2, 3, 4, 5, 6,];
     const withOrders = [], noOrders = [];
     squad.forEach(unit => {
@@ -298,10 +298,10 @@ class SparkSimulator {
     // return top 10 results in descending order
     return results
       .sort((a, b) => b.weightedPercentage - a.weightedPercentage)
-      .slice(0, 10);
+      .slice(0, maxResults);
   }
 
-  findBestPositions(squad = [], threshold = 0.5) {
+  findBestPositions(squad = [], threshold = 0.5, maxResults = 10) {
     const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
 
     // separate squad into 2 groups, 1 for units with specified positions, 1 for units without positions
@@ -333,7 +333,7 @@ class SparkSimulator {
             position,
           };
         }).filter(s => !!s).concat(withPositions);
-        const orderResults = this.findBestOrders(tempSquad, threshold);
+        const orderResults = this.findBestOrders(tempSquad, threshold, maxResults);
 
         orderResults.forEach(result => {
           if (result.weightedPercentage >= threshold) {
@@ -342,7 +342,7 @@ class SparkSimulator {
         });
 
         const currentPercent = ((++numComplete / permutations.length) * 100);
-        const message = `Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`;
+        const message = `Finding Positions: ${currentPercent.toFixed(2)}% complete (${permutations.length - numComplete} remaining)`;
         // console.log(message);
         this.eventEmitter.emit('progress', {
           percentComplete: currentPercent,
@@ -354,7 +354,7 @@ class SparkSimulator {
     } else {
       // case when all positions are specified
       // console.log('All positions specified, looking for best orders');
-      const orderResults = this.findBestOrders(withPositions, threshold);
+      const orderResults = this.findBestOrders(withPositions, threshold, maxResults);
 
       orderResults.forEach(result => {
         if (result.weightedPercentage >= threshold) {
@@ -366,7 +366,7 @@ class SparkSimulator {
     // return top 10 results in descending order
     return results
       .sort((a, b) => b.weightedPercentage - a.weightedPercentage)
-      .slice(0, 10);
+      .slice(0, maxResults);
   }
   
   // check validity of squad and get unit data
@@ -402,9 +402,9 @@ class SparkSimulator {
   }
 
   async run (squad = [], options = {}) {
-    const { threshold, sortResults, } = options;
+    const { threshold, sortResults, maxResults, } = options;
     await this.preProcessSquad(squad);
-    const results = this.findBestPositions(squad, threshold);
+    const results = this.findBestPositions(squad, threshold, maxResults);
     if (sortResults) {
       results.forEach(r => {
         r.squad.sort((a, b) => SparkSimulator.getPositionIndex(a.position) - SparkSimulator.getPositionIndex(b.position));

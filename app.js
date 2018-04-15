@@ -157,6 +157,15 @@ var tempGlobals;
       simResultArea.append(elem);
     }
 
+    const bbOrderMapping = {
+      1: 'red',
+      2: 'yellow',
+      3: 'green',
+      4: 'blue',
+      5: 'violet',
+      6: 'grey',
+    };
+
     results.forEach((result, index) => {
       const elem = templateElement.clone();
       elem.attr('id', `sim-result-${index + 1}`);
@@ -180,6 +189,7 @@ var tempGlobals;
           unitElem.find('#position-text').text(self.positions[unit.position]);
           unitElem.find('#order-type-label #bb-order').text(unit.bbOrder);
           unitElem.find('#order-type-label .detail').text((unit.type || 'N/A').toUpperCase());
+          unitElem.find('#order-type-label').addClass(bbOrderMapping[+unit.bbOrder]);
           unitElem.find('#spark-statistic .value').text(`${unit.actualSparks} / ${unit.possibleSparks}`);
           squadArea.append(unitElem);
         });
@@ -195,9 +205,10 @@ var tempGlobals;
     const doLockPosition = formData.positionLock.checkbox('is checked');
     const currentBBOrder = formData.order.value;
     const currentType = formData.type.val();
+    const isEmpty = formData.select.value === 'E';
     return {
       id: formData.select.value,
-      position: doLockPosition ? position : null,
+      position: doLockPosition || isEmpty ? position : null,
       bbOrder: currentBBOrder === 'any' ? undefined : +currentBBOrder,
       type: currentType,
     };

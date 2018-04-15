@@ -298,7 +298,44 @@ test('Empty and Any units, 2 specified', async () => {
   ];
 
   const results = await sparkSim.run(input, { sortResults: true, });
-  // fs.writeFileSync('empty-any-mixed-results.json', JSON.stringify(results, null, 2));
+  // should result in perfectly sparking both units
+  results.forEach(result => {
+    expect(result.weightedPercentage).toBeCloseTo(1.0);
+  });
+});
+
+test('Empty and Any units, 2 specified, limit results to 5', async () => {
+  const input = [
+    {
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'id': '860328',
+      'type': 'sbb',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'X',
+    },
+    {
+      'id': 'E',
+      'position': 'middle-right',
+    },
+  ];
+
+  const results = await sparkSim.run(
+    input,
+    {
+      sortResults: true,
+      maxResults: 5,
+    });
+  expect(results.length).toBeLessThanOrEqual(5);
   // should result in perfectly sparking both units
   results.forEach(result => {
     expect(result.weightedPercentage).toBeCloseTo(1.0);
