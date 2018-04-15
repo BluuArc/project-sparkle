@@ -320,7 +320,6 @@ class SparkSimulator {
     // console.log({ permutedPositions, });
     const permutations = this.getAllPermutations(permutedPositions);
     let numComplete = 0;
-    let lastLoggedPercent = -1;
     let results = [];
     if (permutations.length > 0) {
       permutations.forEach(permutation => {
@@ -342,19 +341,15 @@ class SparkSimulator {
           }
         });
 
-        const currentPercent = Math.floor((++numComplete / permutations.length) * 100);
-
-        if (currentPercent % 5 === 0 && currentPercent !== lastLoggedPercent) {
-          lastLoggedPercent = currentPercent;
-          const message = `Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`;
-          // console.log(message);
-          this.eventEmitter.emit('progress', {
-            percentComplete: currentPercent,
-            complete: numComplete,
-            total: permutations.length,
-            message,
-          });
-        }
+        const currentPercent = ((++numComplete / permutations.length) * 100);
+        const message = `Finding Positions: ${currentPercent}% complete (${permutations.length - numComplete} remaining)`;
+        // console.log(message);
+        this.eventEmitter.emit('progress', {
+          percentComplete: currentPercent,
+          complete: numComplete,
+          total: permutations.length,
+          message,
+        });
       });
     } else {
       // case when all positions are specified

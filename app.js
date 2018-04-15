@@ -11,6 +11,7 @@ var tempGlobals;
     unitNames: {},
     unitTypes: {},
     formData: {},
+    unitData: null,
   };
 
   // tempGlobals = self;
@@ -18,10 +19,14 @@ var tempGlobals;
   $(document).ready(() => init());
 
   function getUnitData() {
-    return new Promise((fulfill, reject) => {
-      $.get('tests/info-gl.json')
-        .done(fulfill).fail(reject);
+    self.simWorker.postMessage({
+      url: `${location.href}tests/info-gl.json`,
+      command: 'getjson',
     });
+    // return new Promise((fulfill, reject) => {
+    //   $.get('tests/info-gl.json')
+    //     .done(fulfill).fail(reject);
+    // });
   }
 
   function showOutput(msg) {
@@ -44,12 +49,47 @@ var tempGlobals;
         handleSimError(e.data.error);
       } else if (e.data.results) {
         handleSimResults(e.data.results);
+      } else if (e.data.json) {
+        self.unitData = e.data.json;
+        self.simWorker.postMessage({
+          command: 'init',
+          unitData: e.data.json,
+        });
       }
     };
   }
 
+  function notify(message, percentProgress = 100, hasError = false) {
+    const bars = self.areas.progress.find('.ui.progress');
+    const $message = self.areas.progress.find('.ui.message');
+    bars.progress({
+      percent: percentProgress,
+    });
+    $message.html(message);
+    if (percentProgress === 100 && !hasError) {
+      $message.addClass('positive');
+      $message.removeClass('negative');
+    } else {
+      $message.removeClass('positive');
+      if (hasError) {
+        $message.addClass('negative');
+      } else{
+        $message.removeClass('negative');
+      }
+    }
+  }
+
   function handleSimProgress(progress) {
-    console.debug('progress', progress);
+    let message;
+    // unit data not loaded yet
+    if (Object.keys(self.unitNames).length === 0) {
+      message = `Loading unit data. ${progress.percentComplete.toFixed(2)}% Complete.`;
+    } else {
+      const numRemaining = progress.total - progress.complete;
+      message = `Running spark simulator. ${progress.percentComplete.toFixed(2)}% Complete. (${numRemaining} combinations remaining).`;
+    }
+
+    notify(message, progress.percentComplete);
   }
 
   function handleSimError(error) {
@@ -57,6 +97,7 @@ var tempGlobals;
     self.areas.simSettings.find('#run-sim-btn').removeClass('disabled');
     self.areas.squadSetup.find('.ui.dimmer').removeClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
+    notify(error, 0, true);
   }
 
   function handleSimResults(results) {
@@ -87,14 +128,10 @@ var tempGlobals;
     self.areas.squadSetup.find('.ui.dimmer').addClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
 
-
-    setTimeout(() => {
-      handleSimResults();
-    }, 5000);
-    // self.simWorker.postMessage({
-    //   command: 'runsim',
-    //   input,
-    // });
+    self.simWorker.postMessage({
+      command: 'runsim',
+      input,
+    });
   }
 
   function initializePageElements() {
@@ -172,6 +209,7 @@ var tempGlobals;
     self.areas.simSettings.show();
     self.areas.squadSetup.find('.ui.dimmer').removeClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
+    notify('Spark Sim Setup Area is ready.');
   }
 
   async function init() {
@@ -180,14 +218,16 @@ var tempGlobals;
     self.eventEmitter = new EventEmitter();
     self.areas.squadSetup = $('#setup-area #squad-setup-area');
     self.areas.simSettings = $('#setup-area #sim-settings-area');
+    self.areas.progress = $('#progress-area');
+
     self.areas.simSettings.hide();
     self.areas.squadSetup.find('.ui.dimmer').addClass('active');
     self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Loading unit data');
     initSimWorker();
 
-    let unitData;
     self.eventEmitter.on('ready', () => {
       console.debug('initializing form');
+      const unitData = self.unitData;
       Object.keys(unitData)
         .sort((a, b) => +a - +b)
         .forEach(id => {
@@ -244,11 +284,8 @@ var tempGlobals;
     });
 
     showOutput('Getting unit data');
-    unitData = await getUnitData();
-    self.simWorker.postMessage({
-      command: 'init',
-      unitData,
-    });
+    getUnitData();
+    
     // self.sparkSim = new SparkSimulator({
     //   getUnit: id => unitData[id]
     // });
