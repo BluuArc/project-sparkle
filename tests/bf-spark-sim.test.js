@@ -200,3 +200,39 @@ test('squad with 2 specified, 4 "(any)" units', async () => {
   // should result in perfectly sparking both units
   expect(actualResult.weightedPercentage).toBeCloseTo(1.0);
 });
+
+test('Error: < 6 unit input', async () => {
+  try {
+    await sparkSim.run([]);
+  } catch (err) {
+    expect(err.message).toMatch('Squad length must be 6');
+  }
+});
+
+test('Error: < 2 actual units - 5 any', async () => {
+  const input = [
+    {
+      id: 10011,
+    },
+    {
+      id: 'X',
+    },
+    {
+      id: 'X',
+    },
+    {
+      id: 'X',
+    },
+    {
+      id: 'X',
+    },
+    {
+      id: 'X',
+    },
+  ];
+  try {
+    await sparkSim.run(input);
+  } catch (err) {
+    expect(err.message).toMatch('Must have at least 2 actual units in squad');
+  }
+});

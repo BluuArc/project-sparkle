@@ -378,9 +378,11 @@ class SparkSimulator {
   async preProcessSquad(squad = []) {
     const anyUnits = squad.filter(u => u.id === 'X');
     const emptyUnits = squad.filter(u => u.id === 'E');
-    if (squad.length !== 6) {
+    if (!Array.isArray(squad)) {
+      throw Error('Input must be an array');
+    } else if (squad.length !== 6) {
       throw Error('Squad length must be 6');
-    } else if (anyUnits + emptyUnits > 4) {
+    } else if (anyUnits.length + emptyUnits.length > 4) {
       throw Error('Must have at least 2 actual units in squad');
     } else if (emptyUnits.filter(u => !u.position).length > 1) {
       throw Error('Must have position satisfied for every empty unit');
