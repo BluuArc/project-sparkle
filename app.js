@@ -1,4 +1,5 @@
 /* global $ EventEmitter */
+var tempGlobals;
 (async () => {
   const self = {
     lastActiveFn: () => { },
@@ -8,7 +9,11 @@
     eventEmitter: null,
     areas: {},
     unitNames: {},
+    unitTypes: {},
+    formData: {},
   };
+
+  // tempGlobals = self;
 
   $(document).ready(() => init());
 
@@ -49,22 +54,52 @@
 
   function handleSimError(error) {
     console.debug('error', error);
+    self.areas.simSettings.find('#run-sim-btn').removeClass('disabled');
+    self.areas.squadSetup.find('.ui.dimmer').removeClass('active');
+    self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
   }
 
   function handleSimResults(results) {
     console.debug('results', results);
+    self.areas.simSettings.find('#run-sim-btn').removeClass('disabled');
+    self.areas.squadSetup.find('.ui.dimmer').removeClass('active');
+    self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
   }
 
-  function runSim(input) {
-    self.simWorker.postMessage({
-      command: 'runsim',
-      input,
-    });
+  function getSimInputFromPosition(position = '') {
+    const formData = self.formData[position];
+    const doLockPosition = formData.positionLock.checkbox('is checked');
+    const currentBBOrder = formData.order.value;
+    const currentType = formData.type.val();
+    return {
+      id: formData.select.value,
+      position: doLockPosition ? position : null,
+      bbOrder: currentBBOrder === 'any' ? undefined : +currentBBOrder,
+      type: currentType,
+    };
+  }
+
+  function runSim() {
+    const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right'];
+    const input = positions.map(getSimInputFromPosition);
+    console.debug('would run sim now', input);
+    self.areas.simSettings.find('#run-sim-btn').addClass('disabled');
+    self.areas.squadSetup.find('.ui.dimmer').addClass('active');
+    self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
+
+
+    setTimeout(() => {
+      handleSimResults();
+    }, 5000);
+    // self.simWorker.postMessage({
+    //   command: 'runsim',
+    //   input,
+    // });
   }
 
   function initializePageElements() {
-    self.areas.squadSetup = $('#squad-setup-area');
-    const unitSetupTemplate = self.areas.squadSetup.find('#template-element');
+    self.areas.unitEditorArea = self.areas.squadSetup.find('#unit-editor-area');
+    const unitSetupTemplate = self.areas.unitEditorArea.find('#template-element');
     const positions = {
       'top-left': 'Top Left',
       'top-right': 'Top Right',
@@ -87,37 +122,88 @@
       const elem = unitSetupTemplate.clone();
       elem.attr('id', positionKey);
       elem.find('#position-text').text(positions[positionKey]);
-      self.areas.squadSetup.append(elem);
-    });
-    self.areas.squadSetup.find('.ui.dropdown[name="unit-select"]')
-      .dropdown({
+      const orderDropdown = elem.find('.ui.dropdown[name="bb-order"]');
+      orderDropdown.dropdown({
+        onChange(value) { orderDropdown.value = value; },
+      }).dropdown('set exactly', ['any',]).dropdown('save defaults');
+      const bbTypeDropdown = elem.find('.ui.dropdown[name="type"]');
+      const unitSelectDropdown = elem.find('.ui.dropdown[name="unit-select"]');
+      unitSelectDropdown.dropdown({
         values: dropdownValues,
         fullTextSearch: 'exact',
-      });
+        onChange(value) {
+          unitSelectDropdown.value = value;
+          const possibleTypes = self.unitTypes[value] || [];
+          if (possibleTypes.length > 0) {
+            const defaultValue = (possibleTypes[1] || possibleTypes[0]).value;
+            bbTypeDropdown.dropdown('change values', possibleTypes)
+              .dropdown('set exactly', [defaultValue, ])
+              .dropdown('save defaults').removeClass('disabled');
+          } else {
+            bbTypeDropdown.dropdown('change values', possibleTypes)
+              .dropdown('set exactly', ['', ])
+              .dropdown('set text', 'No attacks found')
+              .addClass('disabled');
+          }
+        },
+      }).dropdown('set exactly', ['X',])
+        .dropdown('save defaults');
+      bbTypeDropdown
+        .dropdown({
+          onChange (value) { bbTypeDropdown.value = value; }
+        }).dropdown('change values', [])
+        .dropdown('set exactly', ['',])
+        .dropdown('set text', 'No attacks found')
+        .addClass('disabled');
 
-    self.areas.squadSetup.find('.ui.dropdown[name="bb-order"]')
-      .dropdown();
-    self.areas.squadSetup.find('.ui.dropdown[name="type"]')
-      .dropdown();
+      self.formData[positionKey] = {
+        select: unitSelectDropdown,
+        order: orderDropdown,
+        type: bbTypeDropdown,
+        positionLock: elem.find('.ui.checkbox#lock-position').checkbox(),
+      };
 
+      self.areas.unitEditorArea.append(elem);
+    });
+    
+
+    $('#setup-area #run-sim-btn').on('click', runSim);
+
+    self.areas.simSettings.show();
+    self.areas.squadSetup.find('.ui.dimmer').removeClass('active');
+    self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Running Spark Sim');
   }
 
   async function init() {
     console.debug('Starting main');
     self.$output = $('p#output');
     self.eventEmitter = new EventEmitter();
+    self.areas.squadSetup = $('#setup-area #squad-setup-area');
+    self.areas.simSettings = $('#setup-area #sim-settings-area');
+    self.areas.simSettings.hide();
+    self.areas.squadSetup.find('.ui.dimmer').addClass('active');
+    self.areas.squadSetup.find('.ui.dimmer .ui.text.loader').text('Loading unit data');
     initSimWorker();
 
     let unitData;
     self.eventEmitter.on('ready', () => {
+      console.debug('initializing form');
       Object.keys(unitData)
         .sort((a, b) => +a - +b)
         .forEach(id => {
           if (id !== '1') {
+            const possibleTypes = ['bb', 'sbb', 'ubb'];
             const unit = unitData[id];
             const name = unit.name;
             const rarity = (unit.rarity === 8) ? 'OE' : unit.rarity;
-            self.unitNames[id.toString()] = `${name} (${rarity})`;
+            const unitTypes = Object.keys(unit)
+              .filter(key => possibleTypes.includes(key))
+              .map(type => ({ name: type.toUpperCase(), value: type, }));
+
+            if (unitTypes.length > 0) {
+              self.unitNames[id.toString()] = `${name} (${rarity})`;
+              self.unitTypes[id.toString()] = unitTypes;
+            }
           }
         });
       initializePageElements();

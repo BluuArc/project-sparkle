@@ -19,6 +19,10 @@
     #squad-setup-area .unit-editor {
       border: 1px solid rgba(150,150,150,0.25);
     }
+
+    #setup-area #squad-setup-area{
+      min-height: 10rem;
+    }
   </style>
 </head>
 <body>
@@ -29,13 +33,16 @@
     </div>
   </div>
   <div class="ui segments" id="setup-area">
-    <div class="ui segment">
-      <div class="ui two column stackable grid" id="squad-setup-area">
+    <div class="ui segment" id="squad-setup-area">
+      <div class="ui dimmer">
+        <div class="ui text loader">Loading</div>
+      </div>
+      <div class="ui two column stackable grid" id="unit-editor-area">
         <div class="column unit-editor" id="template-element">
           <!-- Name | Position -->
           <div class="ui grid">
             <div class="ten wide column">
-              <select name="unit-select" class="ui fluid search selection dropdown">
+              <select name="unit-select" id="unit-select" class="ui fluid search selection dropdown">
                 <option value="">Unit</option>
                 <option value="X">(Any)</option>
                 <option value="E">(Empty)</option>
@@ -46,7 +53,7 @@
               <div class="ui header medium">
                 <span id="position-text">Top Left</span>
                 <div class="ui sub header">
-                  <div class="ui checkbox">
+                  <div class="ui checkbox" id="lock-position">
                     <input type="checkbox" name="lock-position">
                     <label>Lock Position</label>
                   </div>
@@ -60,7 +67,7 @@
             <div class="column">
               <div class="ui fluid labeled input">
                 <div class="ui label">BB Order</div>
-                <select name="bb-order" class="ui fluid dropdown">
+                <select name="bb-order" id="bb-order" class="ui fluid dropdown">
                   <option value="">BB Order</option>
                   <option value="any">(Any)</option>
                   <option value="1">1</option>
@@ -76,7 +83,7 @@
             <div class="column">
               <div class="ui fluid labeled input">
                 <div class="ui label">Attack Type</div>
-                <select name="type" class="ui fluid dropdown">
+                <select name="type" id="type" class="ui fluid dropdown">
                   <option value="">Attack Type</option>
                   <option value="bb">BB</option>
                   <option value="sbb">SBB</option>
@@ -88,7 +95,10 @@
         </div>
       </div>
     </div>
-    <div class="ui segment">
+    <div class="ui segment" id="sim-settings-area">
+      <div class="ui dimmer">
+        <div class="ui text loader">Loading</div>
+      </div>
       <button id="run-sim-btn" class="ui button fluid primary">Run Simulator</button>
     </div>
   </div>
