@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>Project Sparkle</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!-- <link rel="stylesheet" type="text/css" media="screen" href="main.css" /> -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.css">
+  <style>
+    #app #top-header {
+      margin-top: 1rem;
+    }
+
+    #template-element {
+      display: none;
+    }
+
+    .unit-editor {
+      border: 1px solid rgba(150,150,150,0.25);
+    }
+
+    .result-segment {
+      border: 1px solid gray !important;
+    }
+
+    #setup-area #squad-setup-area {
+      min-height: 10rem;
+    }
+  </style>
+</head>
+<body>
+  <div id="app" class="ui container">
+    <div id="top-header" class="ui dividing center aligned header">
+      <span>Project Sparkle</span>
+<div class="ui sub header">A Port of the Brave Frontier Automated Sparking Simulator</div>
+      <div class="ui sub header">
+        <div class="ui two column center aligned grid">
+          <div class="column">
+            <a href="https://docs.google.com/document/d/1nBpdd4RKky1hpXttPuMjWR_Z_YwHTBtVlVm1bUZPsmM/edit" target="_blank">Original Python Version</a>
+          </div>
+          <div class="column">
+            <a target="_blank" href="https://github.com/BluuArc/project-sparkle">GitHub Repository</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="ui segments" id="setup-area">
+    <div class="ui segment" id="squad-setup-area">
+      <div class="ui dimmer">
+        <div class="ui text loader">Loading</div>
+      </div>
+      <div class="ui two column stackable grid" id="unit-editor-area">
+        <div class="column unit-editor" id="template-element">
+          <!-- Name | Position -->
+          <div class="ui grid">
+            <div class="ten wide column">
+              <select name="unit-select" id="unit-select" class="ui fluid search selection dropdown">
+                <option value="">Unit</option>
+                <option value="X">(Any)</option>
+                <option value="E">(Empty)</option>
+              </select>
+            </div>
+  
+            <div class="six wide right aligned column">
+              <div class="ui header medium">
+                <span id="position-text">Top Left</span>
+                <div class="ui sub header">
+                  <div class="ui checkbox" id="lock-position">
+                    <input type="checkbox" name="lock-position">
+                    <label>Lock Position</label>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+  
+          <!-- BB Order | BB Type -->
+          <div class="ui two column stackable grid">
+            <div class="column">
+              <div class="ui fluid labeled input">
+                <div class="ui label">BB Order</div>
+                <select name="bb-order" id="bb-order" class="ui fluid dropdown">
+                  <option value="">BB Order</option>
+                  <option value="any">(Any)</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="6">6</option>
+                </select>
+              </div>
+            </div>
+  
+            <div class="column">
+              <div class="ui fluid labeled input">
+                <div class="ui label">Attack Type</div>
+                <select name="type" id="type" class="ui fluid dropdown">
+                  <option value="">Attack Type</option>
+                  <option value="bb">BB</option>
+                  <option value="sbb">SBB</option>
+                  <option value="ubb">UBB</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="ui segment" id="notes-area">
+      <div class="ui segments">
+        <div class="ui segment">
+          <div class="ui two column grid stackable">
+            <div class="column">
+              <p><b>Unit data last cached:</b> <span id="cache-time">Never</span></p>
+            </div>
+            <div class="column">
+              <button id="clear-cache-btn" class="ui button fluid secondary">Redownload Units (requires page reload)</button>
+            </div>
+          </div>
+        </div>
+        <div class="ui segment">
+          <b>Note:</b> Squads with teleporting units are not guaranteed to be 100% accurate (as their offsets need to be put in manually)
+        </div>
+      </div>
+    </div>
+    <div class="ui segment" id="sim-settings-area">
+      <div class="ui dimmer">
+        <div class="ui text loader">Loading</div>
+      </div>
+      <button id="run-sim-btn" class="ui button fluid primary">Run Simulator</button>
+    </div>
+  </div>
+
+  <div class="ui segments">
+    <div class="ui segment" id="progress-area">
+      <div class="ui top attached progress">
+        <div class="bar"></div>
+      </div>
+      <div class="ui floating message">
+        Loading data...
+      </div>
+      <div class="ui bottom attached progress">
+        <div class="bar"></div>
+      </div>
+    </div>
+  </div>
+
+
+  <div class="ui segments" id="sim-result-area">
+    <div class="ui segment" id="notes-and-tips">
+      <p>
+        <b>BB Ordering is as follows:</b>
+        <div class="ui breadcrum">
+          <div class="ui red label">
+            <span>1</span>
+            <div class="detail">BB/SBB/UBB</div>
+          </div>
+          <i class="right chevron icon divider"></i>
+          <div class="ui blue label">
+            <span>2</span>
+            <div class="detail">BB/SBB/UBB</div>
+          </div>
+          <i class="right chevron icon divider"></i>
+          <div class="ui green label">
+            <span>3</span>
+            <div class="detail">BB/SBB/UBB</div>
+          </div>
+          <i class="right chevron icon divider"></i>
+          <div class="ui yellow label">
+            <span>4</span>
+            <div class="detail">BB/SBB/UBB</div>
+          </div>
+          <i class="right chevron icon divider"></i>
+          <div class="ui grey label">
+            <span>5</span>
+            <div class="detail">BB/SBB/UBB</div>
+          </div>
+          <i class="right chevron icon divider"></i>
+          <div class="ui violet label">
+            <span>6</span>
+            <div class="detail">BB/SBB/UBB</div>
+          </div>
+        </div>
+      </p>
+    </div>
+    <!-- turn to collapsible? -->
+    <div class="ui segment result-segment" id="template-element">
+      <div class="ui two column grid">
+        <div class="left aligned column">
+          <div class="ui small horizontal statistic" id="overall-sparks">
+            <div class="value">##.##%</div>
+            <div class="label">(Result 1)</div>
+          </div>
+        </div>
+        <div class="right aligned column">
+          <button id="copy-squad-btn" class="ui grey button">Copy Squad</button>
+        </div>
+      </div>
+      <div class="ui two column stackable internally celled grid" id="squad-area">
+        <div class="column unit-editor" id="template-element">
+          <!-- Name | Position -->
+          <div class="ui grid">
+            <div class="ten wide left aligned column">
+              <div class="ui medium header" id="unit-name">Unit Name</div>
+            </div>
+      
+            <div class="six wide right aligned column">
+              <div class="ui header small" id="position-text">
+                <span>Top Left</span>
+              </div>
+            </div>
+          </div>
+      
+          <!-- BB Order/Type | BB Type -->
+          <div class="ui grid">
+            <div class="six wide column">
+              <div class="ui large label" id="order-type-label">
+                 <span id="bb-order">1</span>
+                 <div class="detail">SBB</div>
+              </div>
+            </div>
+
+            <div class="ten wide right aligned column">
+              <div class="ui small horizontal statistic" id="spark-statistic">
+                <div class="value">## / ##</div>
+                <div class="label">Sparks</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/semantic-ui/2.2.14/semantic.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.0/clipboard.min.js"></script>
+  <script src="https://unpkg.com/dexie@latest/dist/dexie.js"></script>
+  <script src="dist/bf-spark-sim.js"></script>
+  <script src="src/event-emitter.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
