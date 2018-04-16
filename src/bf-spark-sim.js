@@ -133,8 +133,13 @@ class SparkSimulator {
     }
     const position = squadEntry.position;
     const { name, moveType, speedType, originalFrames, } = squadEntry.unitData;
-    const frameDelay = ((+squadEntry.bbOrder - 1) * this.sbbFrameDelay) +
+    let frameDelay = ((+squadEntry.bbOrder - 1) * this.sbbFrameDelay) +
       (moveType === 1 ? movespeedOffsets[speedType][position] : 0); // TODO: add support for SBB frame delay of 1
+
+    if (!isNaN(squadEntry.delay)) {
+      // console.log('detected frame delay', frameDelay, '+', squadEntry.delay);
+      frameDelay += +squadEntry.delay;
+    }
 
     squadEntry.alias = squadEntry.alias || name;
 
