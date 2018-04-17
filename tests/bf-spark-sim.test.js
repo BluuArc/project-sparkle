@@ -439,3 +439,70 @@ test('Teleporter: Karna Masta sparks with Tilith UBB 72 times', async () => {
     expect(unit.actualSparks).toBe(72);
   });
 });
+
+test('unit with unknown proc id', async () => {
+  const input = [
+    {
+      'id': '840128',
+      'alias': 'Silent Sentinel Silvie',
+      'position': 'top-left',
+      'bbOrder': 3,
+      'type': 'sbb',
+      'actualSparks': 150,
+      'possibleSparks': 154,
+      'delay': 0,
+    },
+    {
+      'id': '840278',
+      'alias': 'Viper Blitzkrieg Durumn',
+      'position': 'top-right',
+      'bbOrder': 2,
+      'type': 'sbb',
+      'actualSparks': 158,
+      'possibleSparks': 159,
+      'delay': 0,
+    },
+    {
+      'id': '840438',
+      'alias': 'Demon Ulfhednar Zelion',
+      'position': 'middle-left',
+      'bbOrder': 5,
+      'type': 'sbb',
+      'actualSparks': 108,
+      'possibleSparks': 143,
+      'delay': 0,
+    },
+    {
+      'id': 'E',
+      'alias': '(Empty)',
+      'position': 'middle-right',
+      'type': '',
+      'actualSparks': 0,
+      'possibleSparks': 0,
+      'delay': 0,
+    },
+    {
+      'id': '840288',
+      'alias': 'Sonic Blaster Vashi',
+      'position': 'bottom-left',
+      'bbOrder': 1,
+      'type': 'sbb',
+      'actualSparks': 138,
+      'possibleSparks': 138,
+      'delay': 0,
+    },
+    {
+      'id': '40507',
+      'alias': 'Radiant Guardian Shera',
+      'position': 'bottom-right',
+      'bbOrder': 4,
+      'type': 'sbb',
+      'actualSparks': 234,
+      'possibleSparks': 240,
+      'delay': 0,
+    },
+  ];
+
+  const result = await sparkSim.run(input, { sortResults: true, threshold: 0.1, });
+  expect(result[0].squad.length).toBe(6);
+});

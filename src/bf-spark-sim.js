@@ -112,8 +112,8 @@ class SparkSimulator {
       // console.log('new delay', offset);
     }
     let isAOE = true; // TODO: add support for skills with multiple AOE attacks
-    const attackingEffectFrames = effectFrames.filter(procFrame => attackingProcs.indexOf(procFrame['proc id'].toString()) > -1);
-    return allFrames.filter(procFrame => attackingProcs.indexOf(procFrame['proc id'].toString()) > -1)
+    const attackingEffectFrames = effectFrames.filter(procFrame => attackingProcs.indexOf((procFrame['proc id'] || procFrame['unknown proc id'] || '').toString()) > -1);
+    return allFrames.filter(procFrame => attackingProcs.indexOf((procFrame['proc id'] || procFrame['unknown proc id'] || '').toString()) > -1)
       .map((procFrame, index) => {
         isAOE = attackingEffectFrames[index]['target area'] === 'aoe';
         const effectDelay = +procFrame['effect delay time(ms)/frame'].split('/')[1];
