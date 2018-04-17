@@ -401,3 +401,41 @@ test('Error: highest BB order doesn\'t match max', async () => {
     expect(err.message).toMatch('BB Order cannot exceed number of non-empty units (5)');
   }
 });
+
+test('Teleporter: Karna Masta sparks with Tilith UBB 72 times', async () => {
+  const input = [{
+    'id': 'X',
+    'position': 'top-left',
+    'bbOrder': 2,
+  }, {
+    'id': 'X',
+    'position': 'top-right',
+    'bbOrder': 3,
+  }, {
+    'id': '51317',
+    'position': 'middle-left',
+    'bbOrder': 1,
+    'type': 'sbb',
+  }, {
+    'id': 'E',
+    'position': 'middle-right',
+    'type': '',
+  }, {
+    'id': '50256',
+    'position': 'bottom-left',
+    'bbOrder': 4,
+    'type': 'ubb',
+  }, {
+    'id': 'E',
+    'position': 'bottom-right',
+    'type': '',
+  },];
+
+  const result = await sparkSim.run(input, { sortResults: true, threshold: 0.1, });
+  expect(result[0].squad.length).toBe(6);
+  const actualUnits = result[0].squad.filter(u => u.id !== 'E' && u.id !== 'X');
+  expect(actualUnits.length).toBe(2);
+  actualUnits.forEach(unit => {
+    expect(unit.actualSparks).toBe(72);
+  });
+});

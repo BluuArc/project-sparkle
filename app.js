@@ -172,7 +172,7 @@
   function getFormattedResult(result) {
     const percent = (result.weightedPercentage * 100).toFixed(2);
     let maxNameLength = 0;
-    const generateName = (unit) => `${unit.alias || unit.id}: ${unit.bbOrder}-${(unit.type || 'N/A').toUpperCase()} - (${unit.actualSparks}/${unit.possibleSparks})`;
+    const generateName = (unit) => `${unit.alias || unit.id}: ${unit.bbOrder || 0}-${(unit.type || 'N/A').toUpperCase()} - (${unit.actualSparks}/${unit.possibleSparks})`;
     result.squad.forEach(unit => {
       if (unit.position.includes('left')) {
         maxNameLength = Math.max(maxNameLength, generateName(unit).length);
@@ -234,7 +234,7 @@
           unitElem.attr('id', unit.position);
           unitElem.find('#unit-name').text(unit.alias || unit.id);
           unitElem.find('#position-text').text(self.positions[unit.position]);
-          unitElem.find('#order-type-label #bb-order').text(unit.bbOrder);
+          unitElem.find('#order-type-label #bb-order').text(unit.bbOrder || 0);
           unitElem.find('#order-type-label .detail').text((unit.type || 'N/A').toUpperCase());
           unitElem.find('#order-type-label').addClass(bbOrderMapping[+unit.bbOrder]);
           unitElem.find('#spark-statistic .value').text(`${unit.actualSparks} / ${unit.possibleSparks}`);

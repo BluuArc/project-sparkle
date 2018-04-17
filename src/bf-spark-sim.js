@@ -59,6 +59,8 @@ const teleporterData = {
   '40857': 15, // licht
   '860518': 23, // beatrix
   '860548': 20, // mard
+  // from BluuArc
+  '51317': 105, // karna masta
 };
 
 class SparkSimulator {
@@ -269,21 +271,20 @@ class SparkSimulator {
   // threshold is minimum value of squad sparks to keep squad
   findBestOrders(squad = [], threshold = 0.5, maxResults = 10) {
     const allOrders = [1, 2, 3, 4, 5, 6,];
+    const emptyUnits = squad.filter(unit => unit.id === 'E');
     const withOrders = [], noOrders = [];
-    let numEmpty = 0;
     squad.forEach(unit => {
       if (!isNaN(unit.bbOrder) && allOrders.indexOf(unit.bbOrder) > -1) {
         withOrders.push(unit);
-      } else {
+      } else if (unit.id !== 'E') {
         noOrders.push(unit);
       }
-
-      if (unit.id === 'E') {
-        numEmpty++;
-      }
     });
+    const emptyOrders = allOrders
+      .filter(order => order > (6 - emptyUnits.length))
+      .map((order, index) => ({ bbOrder: order, ...(emptyUnits[index]),} ));
     const inputOrders = withOrders.map(unit => +unit.bbOrder);
-    const permutedOrders = allOrders.filter(order => inputOrders.indexOf(order) === -1 && order <= (6 - numEmpty));
+    const permutedOrders = allOrders.filter(order => inputOrders.indexOf(order) === -1 && order <= (6 - emptyUnits.length));
     const permutations = this.getAllPermutations(permutedOrders);
     let results = [];
     if (permutations.length > 0) {
@@ -297,7 +298,8 @@ class SparkSimulator {
             ...(noOrders[index]),
             bbOrder,
           };
-        }).filter(s => !!s).concat(withOrders);
+        }).filter(s => !!s).concat(withOrders).concat(emptyOrders);
+
         const result = this.processSquad(tempSquad);
         if (result.weightedPercentage >= threshold) {
           results.push(result);
@@ -305,7 +307,7 @@ class SparkSimulator {
       });
     } else {
       // console.log('All orders specfied, running sim on single order.');
-      const result = this.processSquad(withOrders);
+      const result = this.processSquad(withOrders.concat(emptyOrders));
       if (result.weightedPercentage >= threshold) {
         results.push(result);
       }
