@@ -1,4 +1,4 @@
-/* global $ EventEmitter ClipboardJS Dexie */
+/* global $ EventEmitter ClipboardJS Dexie SparkSimulator */
 (async () => {
   const self = {
     lastActiveFn: () => { },
@@ -20,6 +20,7 @@
       'bottom-right': 'Bottom Right',
     },
     db: null,
+    supportedTeleporters: SparkSimulator.getSupportedTeleporters(),
   };
 
   function getPositionIndex(position = '') {
@@ -351,6 +352,29 @@
     
 
     $('#setup-area #run-sim-btn').on('click', runSim);
+
+    // initialize teleporter list
+    const teleporterList = self.areas.notes.find('#teleporter-list');
+    self.supportedTeleporters
+      .sort((a, b) => +a - +b)
+      .map(id => self.unitNames[id.toString()])
+      .forEach(name => {
+        teleporterList.append(`<div class="column">${name}</div>`);
+      });
+    teleporterList.parent().hide();
+    const teleporterListToggleButton = self.areas.notes.find('#show-teleporter-list-btn');
+    teleporterListToggleButton.on('click', () => {
+      const isHidden = teleporterList.parent().css('display') === 'none';
+      if (isHidden) {
+        teleporterListToggleButton.find('.chevron').removeClass('right').addClass('down');
+        teleporterListToggleButton.find('span').text('Hide Supported Teleporting Units');
+        teleporterList.parent().show();
+      } else {
+        teleporterListToggleButton.find('.chevron').removeClass('down').addClass('right');
+        teleporterListToggleButton.find('span').text('Show Supported Teleporting Units');
+        teleporterList.parent().hide();
+      }
+    })
 
     self.areas.simSettings.show();
     self.areas.notes.show();

@@ -42,23 +42,23 @@ const movespeedOffsets = {
   },
 };
 
-// from Hamza Khan
 const teleporterData = {
-  'ezra': 19,
-  'arthur': 11,
-  'zeis': 25,
-  'ciara': 32,
-  'kalon': 48,
-  'neferet': 34,
-  'gabriela': 30,
-  'mariela': 43,
-  'zenia': 21,
-  'carrol': 23,
-  'zalvard': 17,
-  'diastima': 21,
-  'licht': 15,
-  'beatrix': 23,
-  'mard': 20,
+  // from Hamza Khan
+  '850328': 19, // ezra
+  '750167': 11, // arthur
+  '810278': 25, // zeis
+  '810108': 32, // ciara
+  '61007': 48, // kalon
+  '860357': 34, // neferet
+  '850418': 30, // gabriela
+  '20887': 43, // mariela
+  '860258': 21, // zenia
+  '850158': 23, // carrol
+  '61087': 17, // zalvard
+  '51107': 21, // diastima
+  '40857': 15, // licht
+  '860518': 23, // beatrix
+  '860548': 20, // mard
 };
 
 class SparkSimulator {
@@ -82,7 +82,7 @@ class SparkSimulator {
     return await Promise.resolve(this.getUnitFn(id));
   }
   
-  get supportedTeleporters () {
+  static getSupportedTeleporters () {
     return Object.keys(teleporterData);
   }
 
@@ -92,10 +92,7 @@ class SparkSimulator {
   }
 
   getTeleporterOffset(unitData) {
-    const filteredName = Object.keys(teleporterData)
-      .filter(name => unitData.name.toLowerCase().indexOf(name) > -1)[0];
-    // console.log(unitData.name, filteredName, teleporterData[filteredName]);
-    return teleporterData[filteredName] || 0;
+    return teleporterData[unitData.id.toString()] || 0;
   }
 
   // returns an array of attacks, where each attack is an object of st/aoe classification keyed by frame times

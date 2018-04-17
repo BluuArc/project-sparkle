@@ -129,7 +129,7 @@
       <div class="ui segments">
         <div class="ui segment">
           <div class="ui two column grid stackable">
-            <div class="column">
+            <div class="center aligned column">
               <p><b>Unit data last cached:</b> <span id="cache-time">Never</span></p>
             </div>
             <div class="column">
@@ -137,8 +137,22 @@
             </div>
           </div>
         </div>
+        <div class="ui center aligned segment">
+          <div class="ui two column grid stackable">
+            <div class="center aligned column">
+              <b>Note:</b> Squads with certain teleporting units are not guaranteed to be 100% accurate (as their offsets need to be put in manually)
+            </div>
+            <div class="column">
+              <button id="show-teleporter-list-btn" class="ui labeled icon button fluid">
+                <i class="chevron right icon"></i>
+                <span>Show Supported Teleporting Units</span>
+              </button>
+            </div>
+          </div>
+        </div>
         <div class="ui segment">
-          <b>Note:</b> Squads with teleporting units are not guaranteed to be 100% accurate (as their offsets need to be put in manually)
+          <div class="ui small center aligned header">Supported Teleporting Units</div>
+          <div class="ui four column center aligned grid stackable" id="teleporter-list"></div>
         </div>
       </div>
     </div>
