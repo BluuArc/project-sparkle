@@ -252,12 +252,14 @@
     const doLockPosition = formData.positionLock.checkbox('is checked');
     const currentBBOrder = formData.order.value;
     const currentType = formData.type.val();
+    const currentDelay = formData.delay.val();
     const isEmpty = formData.select.value === 'E';
     return {
       id: formData.select.value,
       position: doLockPosition || isEmpty ? position : null,
       bbOrder: currentBBOrder === 'any' ? undefined : +currentBBOrder,
       type: currentType,
+      delay: !isNaN(currentDelay) ? +currentDelay : undefined,
     };
   }
 
@@ -336,6 +338,7 @@
         order: orderDropdown,
         type: bbTypeDropdown,
         positionLock: elem.find('.ui.checkbox#lock-position').checkbox(),
+        delay: elem.find('input[name="delay"]'),
       };
 
       self.areas.unitEditorArea.append(elem);

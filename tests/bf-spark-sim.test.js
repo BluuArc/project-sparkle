@@ -15,8 +15,8 @@ test('fully specified input - fire squad', async () => {
       'position': 'top-left',
       'bbOrder': 6,
       'type': 'sbb',
-      'actualSparks': 89,
-      'possibleSparks': 89,
+      'actualSparks': 114,
+      'possibleSparks': 114,
     },
     {
       'id': '10257',
@@ -51,8 +51,8 @@ test('fully specified input - fire squad', async () => {
       'position': 'bottom-left',
       'bbOrder': 5,
       'type': 'sbb',
-      'actualSparks': 89,
-      'possibleSparks': 89,
+      'actualSparks': 114,
+      'possibleSparks': 114,
     },
     {
       'id': '810278',

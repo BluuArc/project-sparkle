@@ -81,6 +81,10 @@ class SparkSimulator {
   async getUnit (id) {
     return await Promise.resolve(this.getUnitFn(id));
   }
+  
+  get supportedTeleporters () {
+    return Object.keys(teleporterData);
+  }
 
   static getPositionIndex(position = '') {
     const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
@@ -95,22 +99,31 @@ class SparkSimulator {
   }
 
   // returns an array of attacks, where each attack is an object of st/aoe classification keyed by frame times
-  getOriginalFramesForUnit(unit, type) {
+  getOriginalFramesForUnit(unit, type, delay) {
     const attackingProcs = ['1', '13', '14', '27', '28', '29', '47', '61', '64', '75', '11000',].concat(['46', '48', '97',]);
     const allFrames = unit[type]['damage frames'];
+    const effectFrames = unit[type].levels[0].effects;
     const moveType = +unit.movement.skill['move type'];
-    const offset = (moveType === 3 ? +unit.movement.skill['move speed'] : 0) +
+    let offset = (moveType === 3 ? +unit.movement.skill['move speed'] : 0) +
       (+moveType === 2 ? this.getTeleporterOffset(unit) : 0);
+
+    if (!isNaN(delay)) {
+      // console.log('detected frame delay', offset, '+', delay);
+      offset += +delay;
+      // console.log('new delay', offset);
+    }
     let isAOE = true; // TODO: add support for skills with multiple AOE attacks
+    const attackingEffectFrames = effectFrames.filter(procFrame => attackingProcs.indexOf(procFrame['proc id'].toString()) > -1);
     return allFrames.filter(procFrame => attackingProcs.indexOf(procFrame['proc id'].toString()) > -1)
-      .map(procFrame => {
+      .map((procFrame, index) => {
+        isAOE = attackingEffectFrames[index]['target area'] === 'aoe';
         const effectDelay = +procFrame['effect delay time(ms)/frame'].split('/')[1];
         const damageFrames = {};
         procFrame['frame times'].forEach(val => {
           const actualVal = +val + (moveType === 2 ? 0 : effectDelay) + offset;
           damageFrames[actualVal] = isAOE ? 'aoe' : 'st';
         });
-        isAOE = false;
+        // console.log('WARNING: isAOE flag disabled');
         return damageFrames;
       });
   }
@@ -122,7 +135,7 @@ class SparkSimulator {
       name: unit.name,
       moveType: +unit.movement.skill['move type'],
       speedType: unit.movement.skill['move speed type'].toString(),
-      originalFrames: this.getOriginalFramesForUnit(unit, squadEntry.type || 'sbb'),
+      originalFrames: this.getOriginalFramesForUnit(unit, squadEntry.type || 'sbb', squadEntry.delay),
     };
   }
 
@@ -133,7 +146,7 @@ class SparkSimulator {
     }
     const position = squadEntry.position;
     const { name, moveType, speedType, originalFrames, } = squadEntry.unitData;
-    const frameDelay = ((+squadEntry.bbOrder - 1) * this.sbbFrameDelay) +
+    let frameDelay = ((+squadEntry.bbOrder - 1) * this.sbbFrameDelay) +
       (moveType === 1 ? movespeedOffsets[speedType][position] : 0); // TODO: add support for SBB frame delay of 1
 
     squadEntry.alias = squadEntry.alias || name;
@@ -217,6 +230,7 @@ class SparkSimulator {
         type: unit.type,
         actualSparks,
         possibleSparks,
+        delay: unit.delay,
       };
     });
 
