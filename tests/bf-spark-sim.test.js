@@ -341,3 +341,63 @@ test('Empty and Any units, 2 specified, limit results to 5', async () => {
     expect(result.weightedPercentage).toBeCloseTo(1.0);
   });
 });
+
+test('Error: Empty unit has BB Order', async () => {
+  const input = [
+    {
+      id: '10011',
+    },
+    {
+      id: 'E',
+      position: 'top-left',
+      bbOrder: 1,
+    },
+    {
+      id: '10011',
+    },
+    {
+      id: 'X',
+    },
+    {
+      id: 'X',
+    },
+    {
+      id: 'X',
+    },
+  ];
+  try {
+    await sparkSim.run(input);
+  } catch (err) {
+    expect(err.message).toMatch('Empty units must not have any BB Order');
+  }
+});
+
+test('Error: highest BB order doesn\'t match max', async () => {
+  const input = [
+    {
+      id: '10011',
+    },
+    {
+      id: 'E',
+      position: 'top-right',
+    },
+    {
+      id: 'X',
+      bbOrder: 6,
+    },
+    {
+      id: '10011',
+    },
+    {
+      id: 'X',
+    },
+    {
+      id: 'X',
+    },
+  ];
+  try {
+    await sparkSim.run(input);
+  } catch (err) {
+    expect(err.message).toMatch('BB Order cannot exceed number of non-empty units (5)');
+  }
+});
