@@ -273,15 +273,20 @@ class SparkSimulator {
   findBestOrders(squad = [], threshold = 0.5, maxResults = 10) {
     const allOrders = [1, 2, 3, 4, 5, 6,];
     const withOrders = [], noOrders = [];
+    let numEmpty = 0;
     squad.forEach(unit => {
       if (!isNaN(unit.bbOrder) && allOrders.indexOf(unit.bbOrder) > -1) {
         withOrders.push(unit);
       } else {
         noOrders.push(unit);
       }
+
+      if (unit.id === 'E') {
+        numEmpty++;
+      }
     });
     const inputOrders = withOrders.map(unit => +unit.bbOrder);
-    const permutedOrders = allOrders.filter(order => inputOrders.indexOf(order) === -1);
+    const permutedOrders = allOrders.filter(order => inputOrders.indexOf(order) === -1 && order <= (6 - numEmpty));
     const permutations = this.getAllPermutations(permutedOrders);
     let results = [];
     if (permutations.length > 0) {
@@ -387,6 +392,7 @@ class SparkSimulator {
   async preProcessSquad(squad = []) {
     const anyUnits = squad.filter(u => u.id === 'X');
     const emptyUnits = squad.filter(u => u.id === 'E');
+    const highestBbOrder = Math.max(0, ...(squad.filter(u => u.bbOrder !== undefined).map(u => u.bbOrder)));
     if (!Array.isArray(squad)) {
       throw Error('Input must be an array');
     } else if (squad.length !== 6) {
@@ -395,6 +401,10 @@ class SparkSimulator {
       throw Error('Must have at least 2 actual units in squad');
     } else if (emptyUnits.filter(u => !u.position).length > 1) {
       throw Error('Must have position satisfied for every empty unit');
+    } else if (emptyUnits.filter(u => u.bbOrder !== undefined).length > 0) {
+      throw Error('Empty units must not have any BB Order');
+    } else if (highestBbOrder > (6 - emptyUnits.length)) {
+      throw Error(`BB Order cannot exceed number of non-empty units (${6 - emptyUnits.length})`);
     }
 
     const loadPromises = [];
