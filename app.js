@@ -311,6 +311,11 @@
         onChange(value) {
           unitSelectDropdown.value = value;
           const possibleTypes = self.unitTypes[value] || [];
+          if (value === 'E') {
+            orderDropdown.dropdown('restore defaults').addClass('disabled');
+          } else {
+            orderDropdown.dropdown('restore defaults').removeClass('disabled');
+          }
           if (possibleTypes.length > 0) {
             const defaultValue = (possibleTypes[1] || possibleTypes[0]).value;
             bbTypeDropdown.dropdown('change values', possibleTypes)
