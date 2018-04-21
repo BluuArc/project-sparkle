@@ -61,6 +61,7 @@ const teleporterData = {
   '860548': 20, // mard
   // from BluuArc
   '51317': 105, // karna masta
+  '830048': 18,
 };
 
 class SparkSimulator {
@@ -85,7 +86,7 @@ class SparkSimulator {
   }
   
   static getSupportedTeleporters () {
-    return Object.keys(teleporterData);
+    return Object.keys(teleporterData).map(id => ({ id, delay: teleporterData[id], }));
   }
 
   static getPositionIndex(position = '') {
@@ -94,7 +95,7 @@ class SparkSimulator {
   }
 
   getTeleporterOffset(unitData) {
-    return teleporterData[unitData.id.toString()] || 0;
+    return this.teleporterData[unitData.id.toString()] || 0;
   }
 
   // returns an array of attacks, where each attack is an object of st/aoe classification keyed by frame times

@@ -356,10 +356,10 @@
     // initialize teleporter list
     const teleporterList = self.areas.notes.find('#teleporter-list');
     self.supportedTeleporters
-      .sort((a, b) => +a - +b)
-      .map(id => self.unitNames[id.toString()])
-      .forEach(name => {
-        teleporterList.append(`<div class="column">${name}</div>`);
+      .sort((a, b) => +a.id - +b.id)
+      .map(({ id, delay, }) => ({ name: self.unitNames[id.toString()], delay, }))
+      .forEach(({ name, delay, }) => {
+        teleporterList.append(`<div class="column">${name}<br>(${delay} frame delay)</div>`);
       });
     teleporterList.parent().hide();
     const teleporterListToggleButton = self.areas.notes.find('#show-teleporter-list-btn');
@@ -374,7 +374,7 @@
         teleporterListToggleButton.find('span').text('Show Supported Teleporting Units');
         teleporterList.parent().hide();
       }
-    })
+    });
 
     self.areas.simSettings.show();
     self.areas.notes.show();

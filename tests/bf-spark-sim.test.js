@@ -506,3 +506,62 @@ test('unit with unknown proc id', async () => {
   const result = await sparkSim.run(input, { sortResults: true, threshold: 0.1, });
   expect(result[0].squad.length).toBe(6);
 });
+
+test('Teleporter: Feeva sparks 102 hits, Dranoel sparks 105 hits', async () => {
+  const input = [{
+    'id': 'X',
+    'alias': '(Any)',
+    'position': 'top-left',
+    'bbOrder': 4,
+    'type': '',
+  },
+  {
+    'id': 'X',
+    'alias': '(Any)',
+    'position': 'top-right',
+    'bbOrder': 3,
+    'type': '',
+  },
+  {
+    'id': 'X',
+    'alias': '(Any)',
+    'position': 'middle-left',
+    'bbOrder': 5,
+    'type': '',
+  },
+  {
+    'id': '830048',
+    'alias': 'Dark Soul Dranoel',
+    'position': 'middle-right',
+    'bbOrder': 1,
+    'type': 'sbb',
+  },
+  {
+    'id': '60667',
+    'alias': 'Sublime Darkness Feeva',
+    'position': 'bottom-left',
+    'bbOrder': 6,
+    'type': 'sbb',
+  },
+  {
+    'id': 'X',
+    'alias': '(Any)',
+    'position': 'bottom-right',
+    'bbOrder': 2,
+    'type': '',
+  },];
+
+  const result = await sparkSim.run(input, { sortResults: true, threshold: 0.1, });
+  expect(result[0].squad.length).toBe(6);
+  const actualUnits = result[0].squad.filter(u => u.id !== 'E' && u.id !== 'X');
+  expect(actualUnits.length).toBe(2);
+  actualUnits.forEach(unit => {
+    if (+unit.id === 60667) {
+      expect(unit.actualSparks).toBe(102);
+    } else if (+unit.id === 830048) {
+      expect(unit.actualSparks).toBe(105);
+    } else {
+      throw Error(`Unknown unit ${unit.id} - ${unit.alias}`);
+    }
+  });
+});

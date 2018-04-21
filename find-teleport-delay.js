@@ -5,6 +5,7 @@ const unitData = JSON.parse(fs.readFileSync('./tests/info-gl.json', 'utf8'));
 
 const sparkSim = new SparkSim({
   getUnit: id => unitData[id],
+  teleporterData: {},
 });
 
 let lastPercent;
@@ -21,38 +22,56 @@ async function main() {
   // otherUnits and teleportingUnit should be as specific as possible
   // in order to speed up the calculation time for one delay
   const otherUnits = [{
-    'id': '60493',
+    'id': 'X',
+    'alias': '(Any)',
     'position': 'top-left',
-    'bbOrder': 2,
-    'type': 'bb',
+    'bbOrder': 4,
+    'type': '',
+    // 'delay': 0,
   }, {
-    'id': '60493',
+    'id': 'X',
+    'alias': '(Any)',
     'position': 'top-right',
     'bbOrder': 3,
-    'type': 'bb',
-  }, {
-    'id': 'E',
-    'position': 'middle-right',
     'type': '',
+    // 'delay': 0,
   }, {
-    'id': '50256',
+    'id': 'X',
+    'alias': '(Any)',
+    'position': 'middle-left',
+    'bbOrder': 5,
+    'type': '',
+    // 'delay': 0,
+  }, {
+    'id': '60667',
+    'alias': 'Sublime Darkness Feeva',
     'position': 'bottom-left',
-    'bbOrder': 4,
-    'type': 'ubb',
+    'bbOrder': 6,
+    'type': 'sbb',
+    // 'actualSparks': 102,
+    // 'possibleSparks': 252,
+    // 'delay': 0,
   }, {
-    'id': 'E',
+    'id': 'X',
+    'alias': '(Any)',
     'position': 'bottom-right',
+    'bbOrder': 2,
     'type': '',
+    // 'delay': 0,
   },];
   const teleportingUnit = {
-    'id': '51317',
-    'position': 'middle-left',
+    'id': '830048',
+    'alias': 'Dark Soul Dranoel',
+    'position': 'middle-right',
     'bbOrder': 1,
     'type': 'sbb',
+    // 'actualSparks': 105,
+    // 'possibleSparks': 105,
+    // 'delay': 0,
   };
   
   let currentDelay = 0;
-  const targetSparks = 72;
+  const targetSparks = 105;
   const delays = [];
   while (currentDelay <= 5000) {
     console.log('testing delay', currentDelay);
@@ -64,6 +83,8 @@ async function main() {
       continue;
     }
     const resultTeleporter = result[0].squad.filter(unit => unit.delay !== undefined);
+    // if (resultTeleporter[0].actualSparks > 0) console.log(resultTeleporter);
+    console.log(resultTeleporter);
     if (resultTeleporter[0].actualSparks === targetSparks) {
       delays.push(result[0]);
     }

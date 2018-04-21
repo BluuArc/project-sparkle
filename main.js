@@ -19,7 +19,7 @@ sparkSim.onProgress(progress => {
 
 async function main() {
   const exampleData = JSONC.parse(fs.readFileSync('input.json', 'utf8'));
-  const result = await sparkSim.run(exampleData, { sortResults: true, });
+  const result = await sparkSim.run(exampleData, { sortResults: true, threshold: 0.0, });
   fs.writeFileSync('output.json', JSON.stringify(result, null, 2), 'utf8');
   console.log('Done');
 }
