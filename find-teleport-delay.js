@@ -22,56 +22,36 @@ async function main() {
   // otherUnits and teleportingUnit should be as specific as possible
   // in order to speed up the calculation time for one delay
   const otherUnits = [{
-    'id': 'X',
-    'alias': '(Any)',
-    'position': 'top-left',
-    'bbOrder': 4,
-    'type': '',
-    // 'delay': 0,
-  }, {
-    'id': 'X',
-    'alias': '(Any)',
+    'id': 'E',
     'position': 'top-right',
-    'bbOrder': 3,
     'type': '',
-    // 'delay': 0,
   }, {
-    'id': 'X',
-    'alias': '(Any)',
+    'id': 'E',
     'position': 'middle-left',
-    'bbOrder': 5,
     'type': '',
-    // 'delay': 0,
   }, {
-    'id': '60667',
-    'alias': 'Sublime Darkness Feeva',
+    'id': 'E',
+    'position': 'middle-right',
+    'type': '',
+  }, {
+    'id': '860018',
     'position': 'bottom-left',
-    'bbOrder': 6,
-    'type': 'sbb',
-    // 'actualSparks': 102,
-    // 'possibleSparks': 252,
-    // 'delay': 0,
-  }, {
-    'id': 'X',
-    'alias': '(Any)',
-    'position': 'bottom-right',
     'bbOrder': 2,
+    'type': 'sbb',
+  }, {
+    'id': 'E',
+    'position': 'bottom-right',
     'type': '',
-    // 'delay': 0,
   },];
   const teleportingUnit = {
-    'id': '830048',
-    'alias': 'Dark Soul Dranoel',
-    'position': 'middle-right',
+    'id': '61207',
+    'position': 'top-left',
     'bbOrder': 1,
-    'type': 'sbb',
-    // 'actualSparks': 105,
-    // 'possibleSparks': 105,
-    // 'delay': 0,
+    'type': 'bb',
   };
   
   let currentDelay = 0;
-  const targetSparks = 105;
+  const targetSparks = 66;
   const delays = [];
   while (currentDelay <= 5000) {
     console.log('testing delay', currentDelay);

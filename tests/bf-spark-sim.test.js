@@ -565,3 +565,43 @@ test('Teleporter: Feeva sparks 102 hits, Dranoel sparks 105 hits', async () => {
     }
   });
 });
+
+test('Teleporter: Alza Masta and Xenon OE spark 66 hits', async () => {
+  const input = [
+    {
+      'id': '61207',
+      'position': 'top-left',
+      'bbOrder': 1,
+      'type': 'bb',
+    },
+    {
+      'id': 'E',
+      'position': 'top-right',
+      'type': '',
+    }, {
+      'id': 'E',
+      'position': 'middle-left',
+      'type': '',
+    }, {
+      'id': 'E',
+      'position': 'middle-right',
+      'type': '',
+    }, {
+      'id': '860018',
+      'position': 'bottom-left',
+      'bbOrder': 2,
+      'type': 'sbb',
+    }, {
+      'id': 'E',
+      'position': 'bottom-right',
+      'type': '',
+    },];
+
+  const result = await sparkSim.run(input, { sortResults: true, threshold: 0.1, });
+  expect(result[0].squad.length).toBe(6);
+  const actualUnits = result[0].squad.filter(u => u.id !== 'E' && u.id !== 'X');
+  expect(actualUnits.length).toBe(2);
+  actualUnits.forEach(unit => {
+    expect(unit.actualSparks).toBe(66);
+  });
+});

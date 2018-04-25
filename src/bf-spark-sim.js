@@ -61,7 +61,8 @@ const teleporterData = {
   '860548': 20, // mard
   // from BluuArc
   '51317': 105, // karna masta
-  '830048': 18,
+  '830048': 18, // dranoel
+  '61207': 29, // alza masta
 };
 
 class SparkSimulator {
