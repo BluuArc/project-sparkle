@@ -270,8 +270,24 @@ class SparkSimulator {
     return results;
   }
 
+  // unit is an entry in squad array
+  generateUnitKey(unit) {
+    if (unit.id === 'X' || unit.id === 'E') {
+      return '';
+    }
+
+    return `${unit.id}|${unit.type}|${unit.position}|${unit.bbOrder}`;
+  }
+
+  generateSquadKey(squad) {
+    return squad
+      .sort((a, b) => a.bbOrder - b.bbOrder)
+      .map(this.generateUnitKey).filter(k => !!k) // remove empty/any units
+      .join('-');
+  }
+
   // threshold is minimum value of squad sparks to keep squad
-  findBestOrders(squad = [], threshold = 0.5, maxResults = 10) {
+  findBestOrders(squad = [], threshold = 0.5, maxResults = 10, resultCache) {
     const allOrders = [1, 2, 3, 4, 5, 6,];
     const emptyUnits = squad.filter(unit => unit.id === 'E');
     const withOrders = [], noOrders = [];
@@ -302,9 +318,14 @@ class SparkSimulator {
           };
         }).filter(s => !!s).concat(withOrders).concat(emptyOrders);
 
-        const result = this.processSquad(tempSquad);
-        if (result.weightedPercentage >= threshold) {
-          results.push(result);
+        const key = this.generateSquadKey(tempSquad);
+        // only calculate if not calculated previously
+        if (!resultCache[key]) {
+          const result = this.processSquad(tempSquad);
+          if (result.weightedPercentage >= threshold) {
+            results.push(result);
+          }
+          resultCache[key] = true;
         }
       });
     } else {
@@ -323,6 +344,7 @@ class SparkSimulator {
 
   findBestPositions(squad = [], threshold = 0.5, maxResults = 10) {
     const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
+    const resultCache = {};
 
     // separate squad into 2 groups, 1 for units with specified positions, 1 for units without positions
     const withPositions = [], noPositions = [];
@@ -353,7 +375,7 @@ class SparkSimulator {
             position,
           };
         }).filter(s => !!s).concat(withPositions);
-        const orderResults = this.findBestOrders(tempSquad, threshold, maxResults);
+        const orderResults = this.findBestOrders(tempSquad, threshold, maxResults, resultCache);
 
         orderResults.forEach(result => {
           if (result.weightedPercentage >= threshold) {
