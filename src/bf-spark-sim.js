@@ -82,6 +82,10 @@ class SparkSimulator {
     this.on('progress', listener);
   }
 
+  onDebug (listener) {
+    this.on('debug', listener);
+  }
+
   async getUnit (id) {
     return await Promise.resolve(this.getUnitFn(id));
   }
@@ -288,6 +292,10 @@ class SparkSimulator {
 
   // threshold is minimum value of squad sparks to keep squad
   findBestOrders(squad = [], threshold = 0.5, maxResults = 10, resultCache) {
+    this.eventEmitter.emit('debug', {
+      text: 'entered findBestOrders',
+      args: arguments,
+    });
     const allOrders = [1, 2, 3, 4, 5, 6,];
     const emptyUnits = squad.filter(unit => unit.id === 'E');
     const withOrders = [], noOrders = [];
@@ -375,6 +383,10 @@ class SparkSimulator {
             position,
           };
         }).filter(s => !!s).concat(withPositions);
+        this.eventEmitter.emit('debug', {
+          text: 'about to enter findBestOrders',
+          args: [tempSquad, threshold, maxResults, resultCache, ],
+        });
         const orderResults = this.findBestOrders(tempSquad, threshold, maxResults, resultCache);
 
         orderResults.forEach(result => {
@@ -396,7 +408,7 @@ class SparkSimulator {
     } else {
       // case when all positions are specified
       // console.log('All positions specified, looking for best orders');
-      const orderResults = this.findBestOrders(withPositions, threshold, maxResults);
+      const orderResults = this.findBestOrders(withPositions, threshold, maxResults, resultCache);
 
       orderResults.forEach(result => {
         if (result.weightedPercentage >= threshold) {

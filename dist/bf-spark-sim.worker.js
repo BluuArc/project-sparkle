@@ -11,6 +11,7 @@ const sparkSimInstance = {
   unitData: {},
   progressHandler: null,
 }
+let debugMode = false;
 
 function initSparkSim(unitData) {
   sparkSimInstance.unitData = unitData;
@@ -19,7 +20,12 @@ function initSparkSim(unitData) {
   });
   sparkSimInstance.sparkSim.onProgress(progress => {
     postMessage({ progress });
-  })
+  });
+  sparkSimInstance.sparkSim.onDebug(debug => {
+    if (debugMode) {
+      console.debug(debug);
+    }
+  });
 }
 
 async function runSim(input, options = { sortResults: true }) {
@@ -108,6 +114,9 @@ onmessage = async function (e) {
       workerConsole.error(err);
       postMessage({ error: err.message });
     }
+  } else if (e.data.command === 'debug') {
+    workerConsole.log('debug mode toggled');
+    debugMode = !debugMode;
   } else {
     postMessage({ error: 'Unknown command' });
   }

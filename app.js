@@ -1,4 +1,5 @@
 /* global $ EventEmitter ClipboardJS Dexie SparkSimulator */
+let toggleDebugMode;
 (async () => {
   const self = {
     lastActiveFn: () => { },
@@ -89,6 +90,7 @@
 
   function initSimWorker() {
     self.simWorker = new Worker('dist/bf-spark-sim.worker.js');
+    toggleDebugMode = () => self.simWorker.postMessage({ command: 'debug', });
     self.simWorker.onmessage = function (e) {
       console.debug('Received worker data', e.data);
       if (typeof self.lastActiveFn === 'function') {
