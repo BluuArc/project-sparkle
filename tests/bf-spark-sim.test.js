@@ -605,3 +605,87 @@ test('Teleporter: Alza Masta and Xenon OE spark 66 hits', async () => {
     expect(unit.actualSparks).toBe(66);
   });
 });
+
+test('Teleporter: Qiutong and Elza OE spark 108 hits', async () => {
+  const input = [
+    {
+      'id': 'E',
+      'position': 'top-left',
+      'type': '',
+    },
+    {
+      'id': '60527',
+      'position': 'top-right',
+      'type': 'sbb',
+      'bbOrder': 1,
+    }, {
+      'id': '850568',
+      'position': 'middle-left',
+      'bbOrder': 3,
+      'type': 'sbb',
+    }, {
+      'id': 'E',
+      'position': 'middle-right',
+      'type': '',
+    }, {
+      'id': '60497',
+      'position': 'bottom-left',
+      'bbOrder': 2,
+      'type': 'sbb',
+    }, {
+      'id': 'E',
+      'position': 'bottom-right',
+      'type': '',
+    },];
+
+  const result = await sparkSim.run(input, { sortResults: true, threshold: 0.1, });
+  expect(result[0].squad.length).toBe(6);
+  const actualUnits = result[0].squad.filter(u => u.id !== 'E' && u.id !== 'X' && u.id !== '60497');
+  expect(actualUnits.length).toBe(2);
+  actualUnits.forEach(unit => {
+    expect(unit.actualSparks).toBe(108);
+  });
+});
+
+test('Teleporter: Qiutong and Reed 7* spark 18 hits', async () => {
+  const input = [{
+      'id': 'E',
+      'position': 'top-left',
+      'type': '',
+    },
+    {
+      'id': 'E',
+      'position': 'top-right',
+      'type': '',
+    }, {
+      'id': 'X',
+      'position': 'middle-left',
+      'bbOrder': 2,
+    }, {
+      'id': 'E',
+      'position': 'middle-right',
+      'type': '',
+    }, {
+      'id': '850568',
+      'position': 'bottom-left',
+      'bbOrder': 1,
+      'type': 'sbb',
+    }, {
+      'id': '10295',
+      'position': 'bottom-right',
+      'type': 'sbb',
+      'bbOrder': 3,
+    },
+  ];
+
+  const result = await sparkSim.run(input, {
+    sortResults: true,
+    threshold: 0.1,
+  });
+  expect(result[0].squad.length).toBe(6);
+  const actualUnits = result[0].squad.filter(u => u.id !== 'E' && u.id !== 'X' && u.id !== '60497');
+  expect(actualUnits.length).toBe(2);
+  actualUnits.forEach(unit => {
+    expect(unit.actualSparks).toBe(18);
+  });
+});

@@ -63,6 +63,7 @@ const teleporterData = {
   '51317': 105, // karna masta
   '830048': 18, // dranoel
   '61207': 29, // alza masta
+  '850568': 14, // qiutong
 };
 
 class SparkSimulator {
@@ -97,6 +98,10 @@ class SparkSimulator {
   static getPositionIndex(position = '') {
     const allPositions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
     return allPositions.indexOf(position);
+  }
+
+  static getValidThresholdValue (threshold) {
+    return Math.max(Math.min(threshold, 100), 0);
   }
 
   getTeleporterOffset(unitData) {
@@ -344,6 +349,7 @@ class SparkSimulator {
       }
     }
 
+
     // return top 10 results in descending order
     return results
       .sort((a, b) => b.weightedPercentage - a.weightedPercentage)
@@ -461,9 +467,9 @@ class SparkSimulator {
   }
 
   async run (squad = [], options = {}) {
-    const { threshold, sortResults, maxResults, } = options;
+    const { threshold = 0.5, sortResults, maxResults, } = options;
     await this.preProcessSquad(squad);
-    const results = this.findBestPositions(squad, threshold, maxResults);
+    const results = this.findBestPositions(squad, SparkSimulator.getValidThresholdValue(threshold), maxResults);
     if (sortResults) {
       results.forEach(r => {
         r.squad.sort((a, b) => SparkSimulator.getPositionIndex(a.position) - SparkSimulator.getPositionIndex(b.position));

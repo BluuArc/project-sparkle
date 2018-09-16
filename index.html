@@ -160,6 +160,17 @@
       <div class="ui dimmer">
         <div class="ui text loader">Loading</div>
       </div>
+      <div class="ui two column grid stackable">
+        <div class="column">
+          <div class="ui fluid labeled input">
+            <div class="ui label">Result Threshold %</div>
+            <input type="number" name="result-threshold" min="1" value="50.00">
+          </div>
+        </div>
+        <div class="column">
+          The minimum percentage of squad sparks needed in order to show up in results. For example, if the value was 100, then only orderings with 100% sparks will show in the results.
+        </div>
+      </div>
       <button id="run-sim-btn" class="ui button fluid primary">Run Simulator</button>
     </div>
   </div>

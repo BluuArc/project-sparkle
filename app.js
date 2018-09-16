@@ -270,6 +270,7 @@ let toggleDebugMode;
     self.areas.simResult.hide();
     const positions = ['top-left', 'top-right', 'middle-left', 'middle-right', 'bottom-left', 'bottom-right',];
     const input = positions.map(getSimInputFromPosition);
+    const threshold = +document.querySelector('input[name="result-threshold"]').value || 50;
     notify('Running Spark Simulator.', 0);
     console.debug('running sim now', input);
     self.areas.simSettings.find('#run-sim-btn').addClass('disabled');
@@ -281,6 +282,10 @@ let toggleDebugMode;
       self.simWorker.postMessage({
         command: 'runsim',
         input,
+        options: {
+          sortResults: true,
+          threshold: threshold / 100,
+        },
       });
     }, 500);
   }
