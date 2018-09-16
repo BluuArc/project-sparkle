@@ -63,7 +63,7 @@ const teleporterData = {
   '51317': 105, // karna masta
   '830048': 18, // dranoel
   '61207': 29, // alza masta
-  '850568': 14, // qiutong
+  '850568': 29, // qiutong
 };
 
 class SparkSimulator {

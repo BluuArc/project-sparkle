@@ -32,10 +32,10 @@ async function main() {
       "type": "",
     },
     {
-      "id": "X",
+      "id": "10295",
       "position": "middle-left",
       "type": "",
-      "bbOrder": 2,
+      "bbOrder": 1,
     },
     {
       "id": "E",
@@ -43,21 +43,21 @@ async function main() {
       "type": "",
     },
     {
-      "id": "10295",
-      "position": "bottom-right",
-      "type": "sbb",
-      "bbOrder": 3,
+      "id": "X",
+      "position": "bottom-left",
+      "type": "",
+      "bbOrder": 2,
     }
   ];
   const teleportingUnit = {
     "id": "850568",
-    "position": "bottom-left",
+    "position": "bottom-right",
     "type": "sbb",
-    "bbOrder": 1,
+    "bbOrder": 3,
   };
   
   let currentDelay = 0;
-  const targetSparks = 18;
+  const targetSparks = 24;
   const delays = [];
   while (currentDelay <= 5000) {
     console.log('testing delay', currentDelay);
