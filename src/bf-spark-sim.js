@@ -467,6 +467,7 @@ class SparkSimulator {
   }
 
   async run (squad = [], options = {}) {
+    performance.mark('runSim');
     const { threshold = 0.5, sortResults, maxResults, } = options;
     await this.preProcessSquad(squad);
     const results = this.findBestPositions(squad, SparkSimulator.getValidThresholdValue(threshold), maxResults);
@@ -475,6 +476,10 @@ class SparkSimulator {
         r.squad.sort((a, b) => SparkSimulator.getPositionIndex(a.position) - SparkSimulator.getPositionIndex(b.position));
       });
     }
+    performance.mark('runSim');
+    const marks = performance.getEntriesByName('runSim', 'mark');
+    console.log(`runSim time: ${marks[1].startTime - marks[0].startTime}`);
+    performance.clearMarks('runSim');
     return results;
   }
 }

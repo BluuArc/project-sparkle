@@ -1,2 +1,3 @@
-simulator.py
+simulator*.py
 node_modules/
+output.json

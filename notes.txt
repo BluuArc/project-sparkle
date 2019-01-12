@@ -1,0 +1,19 @@
+move speed type - used for sparking dupes
+
+move type - used for determining type of animation
+1 - moving
+2 - teleport
+3 - non-moving
+
+ "movement": {
+        "attack": {
+            "move speed": 2,
+            "move speed type": "4",
+            "move type": "2"
+        },
+        "skill": {
+            "move speed": 2,
+            "move speed type": "4",
+            "move type": "3"
+        }
+    },
