@@ -73,6 +73,7 @@ class SparkSimulator {
     this.getUnitFn = options.getUnit;
     this.sbbFrameDelay = 2;
     this.eventEmitter = new EventEmitter();
+    this.hasPerformanceApi = typeof performance !== "undefined" && typeof performance.mark === "function";
   }
 
   on (event, listener) {
@@ -467,7 +468,7 @@ class SparkSimulator {
   }
 
   async run (squad = [], options = {}) {
-    performance.mark('runSim');
+    this.hasPerformanceApi && performance.mark('runSim');
     const { threshold = 0.5, sortResults, maxResults, } = options;
     await this.preProcessSquad(squad);
     const results = this.findBestPositions(squad, SparkSimulator.getValidThresholdValue(threshold), maxResults);
@@ -476,10 +477,12 @@ class SparkSimulator {
         r.squad.sort((a, b) => SparkSimulator.getPositionIndex(a.position) - SparkSimulator.getPositionIndex(b.position));
       });
     }
-    performance.mark('runSim');
-    const marks = performance.getEntriesByName('runSim', 'mark');
-    console.log(`runSim time: ${marks[1].startTime - marks[0].startTime}`);
-    performance.clearMarks('runSim');
+    if (this.hasPerformanceApi) {
+      performance.mark('runSim');
+      const marks = performance.getEntriesByName('runSim', 'mark');
+      console.log(`runSim time: ${marks[1].startTime - marks[0].startTime}`);
+      performance.clearMarks('runSim');
+    }
     return results;
   }
 }
